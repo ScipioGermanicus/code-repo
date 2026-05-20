@@ -1,0 +1,140 @@
+---
+title: "nsti_combined_figure"
+author: "Lasse Steffensen"
+date: "2026-05-20"
+output: html_document
+---
+
+```{r}
+
+setwd("C:/Users/lasse/Desktop/wd/picrust2/my_samples")
+
+library(tidyverse)
+library(lubridate)
+library(patchwork)
+
+
+
+# metadapatchwork# metadata file
+metadata <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/metadata.txt", header = TRUE, sep = "\t")
+
+# otutable
+otutable <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_mappedreads.tsv", header = TRUE, sep = "\t")
+
+taxonomy <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_mappedreads.tsv", header = TRUE, sep = "\t") %>% 
+  select(OTU, Kingdom, Phylum, Class, Order, Family, Genus, Species)
+
+barcodes = metadata$barcode
+
+otutable_norm <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_normalised.tsv", header = TRUE, sep = "\t") %>% 
+  select(OTU, barcodes)
+
+custom_modules_map <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom_module_names.tsv", header = TRUE, sep = "\t")
+
+
+otutable_norm <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_normalised.tsv", header = TRUE, sep = "\t")
+
+species_abun <- otutable_norm %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    )
+  ) %>%
+  group_by(Species) %>%
+  summarise(
+    across(all_of(barcodes), ~ sum(.x, na.rm = TRUE)),
+    .groups = "drop"
+  )
+
+```
+
+Barplot weighted NSTI
+```{r}
+
+
+weighted_nsti_summary <- weighted_nsti_all %>%
+  group_by(plot_group, database, group) %>%
+  summarise(
+    mean_NSTI = mean(weighted_NSTI),
+    sd_NSTI = sd(weighted_NSTI),
+    .groups = "drop"
+  )
+
+ggplot(weighted_nsti_summary, aes(x = plot_group, y = mean_NSTI, fill = database)) +
+  geom_col(width = 0.7, colour = "black") +
+  geom_errorbar(
+    aes(ymin = mean_NSTI - sd_NSTI, ymax = mean_NSTI + sd_NSTI),
+    width = 0.2
+  ) +
+  labs(
+    x = NULL,
+    y = "Mean weighted NSTI",
+    fill = "Database"
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.x = element_blank()
+  )
+
+ggsave("plots/nsti_barplot.png", width = 6, height = 5, dpi = 300)
+
+
+```
+
+box plot over raw NSTI
+```{r}
+
+# ------------------------------------------------------------------------------
+# Boxplot of OTU-level NSTI distributions
+# ------------------------------------------------------------------------------
+
+p_nsti_boxplot <- ggplot(
+  nsti_all,
+  aes(
+    x = plot_group,
+    y = metadata_NSTI,
+    fill = database
+  )
+) +
+  geom_boxplot(
+  width = 0.7,
+  colour = "black",
+  outlier.shape = NA
+) +
+scale_y_continuous(trans = "pseudo_log") +
+  labs(
+    x = NULL,
+    y = "OTU-level NSTI",
+    fill = "Database",
+    title = "Distribution of OTU-level NSTI values"
+  ) +
+  theme_bw(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.x = element_blank(),
+    legend.position = "right",
+    legend.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold"),
+    plot.margin = margin(
+  t = 10,
+  r = 10,
+  b = 30,
+  l = 20
+)
+  ) +
+  scale_y_continuous(limits = c(0, 1.3))
+
+p_nsti_boxplot
+
+ggsave(
+  filename = "plots/otu_level_nsti_boxplot.png",
+  plot = p_nsti_boxplot,
+  width = 5,
+  height = 5.85,
+  dpi = 300
+)
+
+```
