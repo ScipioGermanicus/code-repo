@@ -75,9 +75,14 @@ ggplot(weighted_nsti_summary, aes(x = plot_group, y = mean_NSTI, fill = database
   ) +
   theme_bw() +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    panel.grid.major.x = element_blank()
-  )
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    panel.grid.major.x = element_blank(),
+    plot.margin = margin(
+  t = 10,
+  r = 10,
+  b = 30,
+  l = 30
+  ))
 
 ggsave("plots/nsti_barplot.png", width = 6, height = 5, dpi = 300)
 
@@ -109,11 +114,10 @@ scale_y_continuous(trans = "pseudo_log") +
     x = NULL,
     y = "OTU-level NSTI",
     fill = "Database",
-    title = "Distribution of OTU-level NSTI values"
   ) +
   theme_bw(base_size = 12) +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
     panel.grid.major.x = element_blank(),
     legend.position = "right",
     legend.title = element_text(face = "bold"),
@@ -122,7 +126,7 @@ scale_y_continuous(trans = "pseudo_log") +
   t = 10,
   r = 10,
   b = 30,
-  l = 20
+  l = 30
 )
   ) +
   scale_y_continuous(limits = c(0, 1.3))
@@ -133,7 +137,7 @@ ggsave(
   filename = "plots/otu_level_nsti_boxplot.png",
   plot = p_nsti_boxplot,
   width = 5,
-  height = 5.85,
+  height = 5.05,
   dpi = 300
 )
 
