@@ -1,0 +1,218 @@
+---
+title: "database"
+author: "Lasse Steffensen"
+date: "2026-03-31"
+output: html_document
+---
+
+```{r}
+setwd("C:/Users/lasse/Desktop/wd/25/01_05_cor/database")
+
+library(tidyverse)
+library(scales)
+library(ggtext)
+library(shadowtext)
+library(patchwork)
+
+
+# GTDB-Tk files etc
+tax_chj_ar <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/gtdbtk.ar53.summary.chj.tsv", header = TRUE, sep = "\t")
+tax_chj_bac <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/gtdbtk.bac120.summary.chj.tsv", header = TRUE, sep = "\t")
+chj_mags <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/chj_mags.txt", header = TRUE, sep = "\t")
+
+tax_meso_ar <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/gtdbtk.ar53.summary.meso.tsv", header = TRUE, sep = "\t")
+tax_meso_bac <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/gtdbtk.bac120.summary.meso.tsv", header = TRUE, sep = "\t")
+meso_mags <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/meso_mags.txt", header = TRUE, sep = "\t")
+
+tax_thermo_ar <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/gtdbtk.ar53.summary.thermo.tsv", header = TRUE, sep = "\t")
+tax_thermo_bac <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/gtdbtk.bac120.summary.thermo.tsv", header = TRUE, sep = "\t")
+thermo_mags <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/thermo_mags.txt", header = TRUE, sep = "\t")
+
+bin_status_meso <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/BC13_bins.tsv", header = TRUE, sep = "\t")
+bin_status_thermo <- read.csv("C:/Users/lasse/Desktop/wd/25/df/26/database/BC14_bins.tsv", header = TRUE, sep = "\t")
+
+
+## Filter for HQ MAGs in the gtdb-tk summary files
+# chj mags
+chj_mags <- chj_mags %>%
+  mutate(MAG_clean = str_remove(MAG, "\\.fa$"))
+
+tax_chj_ar <- tax_chj_ar %>%
+  filter(user_genome %in% chj_mags$MAG_clean)
+
+tax_chj_bac <- tax_chj_bac %>%
+  filter(user_genome %in% chj_mags$MAG_clean)
+
+
+# meso
+hq_bins_meso <- bin_status_meso %>%
+  filter(str_detect(bin_status, "HQ")) %>%
+  mutate(MAG_clean = bin %>% str_remove("\\.fa$") %>% str_remove("^Z")) %>%
+  pull(MAG_clean)
+
+meso_mags <- meso_mags %>%
+  mutate(MAG_clean = MAG %>% str_remove("\\.fa$") %>% str_remove("^Z")) %>%
+  filter(MAG_clean %in% hq_bins_meso)
+
+tax_meso_ar <- tax_meso_ar %>%
+  filter(user_genome %in% meso_mags$MAG_clean)
+
+tax_meso_bac <- tax_meso_bac %>%
+  filter(user_genome %in% meso_mags$MAG_clean)
+
+
+# thermo
+hq_bins_thermo <- bin_status_thermo %>%
+  filter(str_detect(bin_status, "HQ")) %>%
+  mutate(MAG_clean = bin %>% str_remove("\\.fa$") %>% str_remove("^Z")) %>%
+  pull(MAG_clean)
+
+thermo_mags <- thermo_mags %>%
+  mutate(MAG_clean = MAG %>% str_remove("\\.fa$") %>% str_remove("^Z")) %>%
+  filter(MAG_clean %in% hq_bins_thermo)
+
+tax_thermo_ar <- tax_thermo_ar %>%
+  filter(user_genome %in% thermo_mags$MAG_clean)
+
+tax_thermo_bac <- tax_thermo_bac %>%
+  filter(user_genome %in% thermo_mags$MAG_clean)
+
+
+# Create one big tax file
+make_tax_df <- function(df, source_name) {
+  df %>%
+    transmute(
+      MAG = user_genome,
+      source = source_name,
+      classification = classification
+    ) %>%
+    separate(
+      classification,
+      into = c("domain", "phylum", "class", "order", "family", "genus", "species"),
+      sep = ";",
+      fill = "right",
+      remove = FALSE
+    ) %>%
+    mutate(
+      across(
+        c(domain, phylum, class, order, family, genus, species),
+        ~ str_remove(.x, "^[a-z]__")
+      )
+    )
+}
+
+tax_all <- bind_rows(
+  make_tax_df(tax_chj_ar, "chj"),
+  make_tax_df(tax_chj_bac, "chj"),
+  make_tax_df(tax_meso_ar, "meso"),
+  make_tax_df(tax_meso_bac, "meso"),
+  make_tax_df(tax_thermo_ar, "thermo"),
+  make_tax_df(tax_thermo_bac, "thermo")
+)
+
+
+```
+
+
+```{r}
+
+# 1. Define the taxonomic levels to iterate through
+tax_levels <- c("phylum", "class", "order", "family", "genus", "species")
+
+cat_levels <- c(
+  "Already in MiDAS AD Genome DB",
+  "Added by both samples",
+  "Added by mesophilic sample only",
+  "Added by thermophilic sample only"
+)
+
+# 2. Function to categorise taxa at each level
+get_taxa_contributions <- function(df, level) {
+  chj_taxa    <- df %>% filter(source == "chj")    %>% pull(!!sym(level)) %>% unique()
+  meso_taxa   <- df %>% filter(source == "meso")   %>% pull(!!sym(level)) %>% unique()
+  thermo_taxa <- df %>% filter(source == "thermo") %>% pull(!!sym(level)) %>% unique()
+
+  chj_taxa    <- chj_taxa[!is.na(chj_taxa)]
+  meso_taxa   <- meso_taxa[!is.na(meso_taxa)]
+  thermo_taxa <- thermo_taxa[!is.na(thermo_taxa)]
+
+  all_taxa <- unique(c(chj_taxa, meso_taxa, thermo_taxa))
+
+  tibble(taxon = all_taxa) %>%
+    mutate(
+      category = case_when(
+        taxon %in% chj_taxa ~ "Already in MiDAS AD Genome DB",
+        taxon %in% meso_taxa & taxon %in% thermo_taxa ~ "Added by both samples",
+        taxon %in% meso_taxa ~ "Added by mesophilic sample only",
+        taxon %in% thermo_taxa ~ "Added by thermophilic sample only",
+        TRUE ~ "Other"
+      )
+    ) %>%
+    filter(category %in% cat_levels) %>%
+    count(category, name = "n") %>%
+    mutate(level = level)
+}
+
+# 3. Process the data
+plot_data <- map_dfr(tax_levels, ~get_taxa_contributions(tax_all, .x)) %>%
+  mutate(
+    level = factor(level, levels = rev(tax_levels)),
+    category = factor(category, levels = cat_levels)
+  ) %>%
+  complete(level, category, fill = list(n = 0))
+
+# 4. Construct the plot
+a <- ggplot(plot_data, aes(x = level, y = n, fill = category)) +
+  geom_col(width = 0.7, color = "white", linewidth = 0.2) +
+  coord_flip() +
+
+  scale_fill_manual(
+    values = c(
+      "Already in MiDAS AD Genome DB" = "#e0e0e0",
+      "Added by both samples" = "#5e3c99",
+      "Added by mesophilic sample only" = "#2c7bb6",
+      "Added by thermophilic sample only" = "#abd9e9"
+    ),
+    breaks = cat_levels,
+    drop = FALSE
+  ) +
+
+  guides(
+    fill = guide_legend(
+      override.aes = list(alpha = 1, colour = NA)
+    )
+  ) +
+
+  theme_minimal(base_size = 14) +
+  labs(
+    x = NULL,
+    y = "Number of Unique Taxa",
+    fill = "Source of Taxon"
+  ) +
+  theme(
+    legend.position = "bottom",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text = element_text(color = "black", face = "bold"),
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "grey30"),
+    legend.title = element_text(face = "bold")
+  ) +
+
+  shadowtext::geom_shadowtext(
+    data = plot_data %>% filter(category != "Already in MiDAS AD Genome DB", n > 0),
+    aes(label = n),
+    position = position_stack(vjust = 0.5),
+    colour = "white",
+    bg.colour = "black",
+    bg.r = 0.18,
+    size = 3,
+    fontface = "bold"
+  )
+
+
+ggsave("added_taxa.png", a, width = 10, height = 4, dpi = 300)
+
+
+```
+
