@@ -28,7 +28,7 @@ taxonomy <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_
 barcodes = metadata$barcode
 
 otutable_norm <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_normalised.tsv", header = TRUE, sep = "\t") %>% 
-  select(OTU, barcodes)
+  select(OTU, FBE62336_barcode04, FBE62336_barcode16)
 
 custom_modules_map <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom_module_names.tsv", header = TRUE, sep = "\t")
 
@@ -52,59 +52,41 @@ species_abun <- otutable_norm %>%
 
 ```
 
+
+................................................................................
+                                      dfs
+................................................................................
+
 NSTI dfs
 ```{r}
 
 # Weighed NSTI files
 weighted_nsti_reference <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/reference/weighted_nsti.tsv", header = TRUE, sep = "\t")
 
-weighted_nsti_standard_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode75/weighted_nsti.tsv", header = TRUE, sep = "\t")
 
-weighted_nsti_standard_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-weighted_nsti_standard_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode28/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+weighted_nsti_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
 
 
-weighted_nsti_standard_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode87/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+weighted_nsti_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
 
-weighted_nsti_standard_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-weighted_nsti_standard_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode40/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+weighted_nsti_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
 
 
-weighted_nsti_custom_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode75/weighted_nsti.tsv", header = TRUE, sep = "\t")
+weighted_nsti_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
 
-weighted_nsti_custom_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-weighted_nsti_custom_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode28/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-
-weighted_nsti_custom_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode87/weighted_nsti.tsv", header = TRUE, sep = "\t")
-
-weighted_nsti_custom_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-weighted_nsti_custom_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode40/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
 
 
 # Combine weighted NSTI values
 
 weighted_nsti_all <- bind_rows(
-  weighted_nsti_standard_meso_1   %>% mutate(database = "PICRUSt2-SC",  group = "Mesophilic"),
-  weighted_nsti_standard_meso_2   %>% mutate(database = "PICRUSt2-SC",  group = "Mesophilic"),
-  weighted_nsti_standard_meso_3   %>% mutate(database = "PICRUSt2-SC",  group = "Mesophilic"),
-  
-  weighted_nsti_standard_thermo_1 %>% mutate(database = "PICRUSt2-SC",  group = "Thermophilic"),
-  weighted_nsti_standard_thermo_2 %>% mutate(database = "PICRUSt2-SC",  group = "Thermophilic"),
-  weighted_nsti_standard_thermo_3 %>% mutate(database = "PICRUSt2-SC",  group = "Thermophilic"),
-  
-  weighted_nsti_custom_meso_1     %>% mutate(database = "MiDAS DB",    group = "Mesophilic"),
-  weighted_nsti_custom_meso_2     %>% mutate(database = "MiDAS DB",    group = "Mesophilic"),
-  weighted_nsti_custom_meso_3     %>% mutate(database = "MiDAS DB",    group = "Mesophilic"),
-  
-  weighted_nsti_custom_thermo_1   %>% mutate(database = "MiDAS DB",    group = "Thermophilic"),
-  weighted_nsti_custom_thermo_2   %>% mutate(database = "MiDAS DB",    group = "Thermophilic"),
-  weighted_nsti_custom_thermo_3   %>% mutate(database = "MiDAS DB",    group = "Thermophilic"),
-  
+  weighted_nsti_standard_meso   %>% mutate(database = "PICRUSt2-SC",  group = "Mesophilic"),
+
+  weighted_nsti_standard_thermo %>% mutate(database = "PICRUSt2-SC",  group = "Thermophilic"),
+
+  weighted_nsti_custom_meso     %>% mutate(database = "MiDAS DB",    group = "Mesophilic"),
+
+  weighted_nsti_custom_thermo   %>% mutate(database = "MiDAS DB",    group = "Thermophilic"),
+
   weighted_nsti_reference         %>% mutate(database = "PICRUSt2-SC", group = "Human gut")
 ) %>%
   mutate(
@@ -137,65 +119,38 @@ id_map <- id_map %>%
   rename("Genome_name" = "original_filename")
 
 # Raw NSTI files
-nsti_standard_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode75/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
 
-nsti_standard_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-nsti_standard_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode28/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+nsti_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
 
 
-nsti_standard_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode87/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-nsti_standard_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
-
-nsti_standard_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode40/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+nsti_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
 
 
-nsti_custom_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode75/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
-  left_join(id_map, by = ("closest_reference_genome"))
-
-nsti_custom_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
-  left_join(id_map, by = ("closest_reference_genome"))
-
-nsti_custom_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode28/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
+nsti_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
   left_join(id_map, by = ("closest_reference_genome"))
 
 
-nsti_custom_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode87/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
+nsti_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
   left_join(id_map, by = ("closest_reference_genome"))
 
-nsti_custom_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
-  left_join(id_map, by = ("closest_reference_genome"))
-
-nsti_custom_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode40/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
-  left_join(id_map, by = ("closest_reference_genome"))
 
 
 nsti_reference <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/gut_data/combined_marker_predicted_and_nsti.tsv", header = TRUE, sep = "\t")
 
 
-library(tidyverse)
 
 # ------------------------------------------------------------------------------
 # 1. Combine stratified NSTI values
 # ------------------------------------------------------------------------------
 
 nsti_all <- bind_rows(
-  nsti_standard_meso_1   %>% mutate(database = "PICRUSt2-SC", group = "Mesophilic"),
-  nsti_standard_meso_2   %>% mutate(database = "PICRUSt2-SC", group = "Mesophilic"),
-  nsti_standard_meso_3   %>% mutate(database = "PICRUSt2-SC", group = "Mesophilic"),
-  
-  nsti_standard_thermo_1 %>% mutate(database = "PICRUSt2-SC", group = "Thermophilic"),
-  nsti_standard_thermo_2 %>% mutate(database = "PICRUSt2-SC", group = "Thermophilic"),
-  nsti_standard_thermo_3 %>% mutate(database = "PICRUSt2-SC", group = "Thermophilic"),
-  
-  nsti_custom_meso_1     %>% mutate(database = "MiDAS DB", group = "Mesophilic"),
-  nsti_custom_meso_2     %>% mutate(database = "MiDAS DB", group = "Mesophilic"),
-  nsti_custom_meso_3     %>% mutate(database = "MiDAS DB", group = "Mesophilic"),
-  
-  nsti_custom_thermo_1   %>% mutate(database = "MiDAS DB", group = "Thermophilic"),
-  nsti_custom_thermo_2   %>% mutate(database = "MiDAS DB", group = "Thermophilic"),
-  nsti_custom_thermo_3   %>% mutate(database = "MiDAS DB", group = "Thermophilic")
+  nsti_standard_meso   %>% mutate(database = "PICRUSt2-SC", group = "Mesophilic"),
+
+  nsti_standard_thermo %>% mutate(database = "PICRUSt2-SC", group = "Thermophilic"),
+
+  nsti_custom_meso     %>% mutate(database = "MiDAS DB", group = "Mesophilic"),
+
+  nsti_custom_thermo   %>% mutate(database = "MiDAS DB", group = "Thermophilic"),
 ) %>%
   mutate(
     plot_group = paste(group, database, sep = " | "),
@@ -228,6 +183,122 @@ nsti_summary <- nsti_all %>%
 
 
 ```
+
+KEGG modulule dfs + collapse to species level
+```{r}
+
+kegg_modules <- c("M00357", "M00567", "M00356", "M00563")
+kegg_modules_labels <- c("Methanogenesis, acetate => methane", "Methanogenesis, CO2 => methane", "Methanogenesis, methanol => methane", "Methanogenesis, methylamine/dimethylamine/trimethylamine => methane")
+
+
+kegg_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+
+
+# collapse to species level
+
+
+
+# 1. KEGG module metadata
+# ------------------------------------------------------------------------------
+
+kegg_module_df <- tibble(
+  function. = kegg_modules,
+  module_label = kegg_modules_labels
+)
+
+
+# 2. Clean taxonomy
+# ------------------------------------------------------------------------------
+
+taxonomy_clean <- taxonomy %>%
+  mutate(across(everything(), ~ str_trim(.x))) %>%
+  rename(taxon = OTU)
+
+
+# 3. Combine all stratified KEGG module contribution dfs
+# ------------------------------------------------------------------------------
+
+kegg_list <- list(
+  custom_meso     = kegg_custom_meso,
+  custom_thermo   = kegg_custom_thermo,
+  standard_meso   = kegg_standard_meso,
+  standard_thermo = kegg_standard_thermo
+)
+
+kegg_all <- bind_rows(kegg_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature", "replicate"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  left_join(kegg_module_df, by = "function.")
+
+
+# 4. Join taxonomy
+# ------------------------------------------------------------------------------
+
+kegg_tax <- kegg_all %>%
+  left_join(taxonomy_clean, by = "taxon")
+
+
+# 5. Collapse to species level
+# ------------------------------------------------------------------------------
+
+kegg_species <- kegg_tax %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    )
+  ) %>%
+  group_by(
+    database,
+    temperature,
+    replicate,
+    sample,
+    function.,
+    module_label,
+    Species
+  ) %>%
+  summarise(
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_rel_function_abun = sum(taxon_rel_function_abun, na.rm = TRUE),
+    n_asvs = n_distinct(taxon),
+    .groups = "drop"
+  ) %>%
+  group_by(database, temperature, replicate, sample, function.) %>%
+  mutate(
+    rel_contribution = taxon_function_abun / sum(taxon_function_abun, na.rm = TRUE),
+    percent_contribution = 100 * rel_contribution
+  ) %>%
+  ungroup()
+
+
+
+
+```
+
+
+
 KEGG CUSTOM module STRATIFIED dfs + collapse to species level
 ```{r}
 
@@ -300,46 +371,22 @@ kegg_modules_labels <- c("Methanogenesis I, acetate => methane", #5
 
 
 
-# kegg meso custom
-kegg2_custom_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode75/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
 
-kegg2_custom_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_custom_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode28/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-# kegg thermo custom
-kegg2_custom_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode87/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_custom_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_custom_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode40/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+kegg2_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
 
-# kegg meso standard
-kegg2_standard_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode75/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+kegg2_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
-kegg2_standard_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+
+kegg2_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
-kegg2_standard_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode28/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+
+kegg2_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
-# kegg thermo standard
-kegg2_standard_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode87/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode40/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
 
 
 
@@ -368,18 +415,10 @@ taxonomy_clean <- taxonomy %>%
 # ------------------------------------------------------------------------------
 
 kegg_list <- list(
-  custom_meso_1     = kegg2_custom_meso_1,
-  custom_meso_2     = kegg2_custom_meso_2,
-  custom_meso_3     = kegg2_custom_meso_3,
-  custom_thermo_1   = kegg2_custom_thermo_1,
-  custom_thermo_2   = kegg2_custom_thermo_2,
-  custom_thermo_3   = kegg2_custom_thermo_3,
-  standard_meso_1   = kegg2_standard_meso_1,
-  standard_meso_2   = kegg2_standard_meso_2,
-  standard_meso_3   = kegg2_standard_meso_3,
-  standard_thermo_1 = kegg2_standard_thermo_1,
-  standard_thermo_2 = kegg2_standard_thermo_2,
-  standard_thermo_3 = kegg2_standard_thermo_3
+  custom_meso     = kegg2_custom_meso,
+  custom_thermo   = kegg2_custom_thermo,
+  standard_meso   = kegg2_standard_meso,
+  standard_thermo = kegg2_standard_thermo
 )
 
 kegg_all <- bind_rows(kegg_list, .id = "df_id") %>%
@@ -453,46 +492,21 @@ kegg CUSTOM dfs UNSTRATIFIED
 ```{r}
 
 
-# kegg meso custom
-kegg2_custom_meso_1_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode75/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
-
-kegg2_custom_meso_2_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
-
-kegg2_custom_meso_3_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode28/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
-
-# kegg thermo custom
-kegg2_custom_thermo_1_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode87/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
-
-kegg2_custom_thermo_2_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
-
-kegg2_custom_thermo_3_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode40/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+kegg2_custom_meso_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(pathway %in% kegg_modules)
 
 
-# kegg meso standard
-kegg2_standard_meso_1_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode75/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+kegg2_custom_thermo_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(pathway %in% kegg_modules)
 
-kegg2_standard_meso_2_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+
+kegg2_standard_meso_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(pathway %in% kegg_modules)
 
-kegg2_standard_meso_3_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode28/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+
+kegg2_standard_thermo_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(pathway %in% kegg_modules)
 
-# kegg thermo standard
-kegg2_standard_thermo_1_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode87/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
-
-kegg2_standard_thermo_2_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
-
-kegg2_standard_thermo_3_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode40/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(pathway %in% kegg_modules)
 
 
 
@@ -514,18 +528,10 @@ kegg_module_df <- tibble(
 # ------------------------------------------------------------------------------
 
 kegg_list_unstrat <- list(
-  custom_meso_1     = kegg2_custom_meso_1_unstrat,
-  custom_meso_2     = kegg2_custom_meso_2_unstrat,
-  custom_meso_3     = kegg2_custom_meso_3_unstrat,
-  custom_thermo_1   = kegg2_custom_thermo_1_unstrat,
-  custom_thermo_2   = kegg2_custom_thermo_2_unstrat,
-  custom_thermo_3   = kegg2_custom_thermo_3_unstrat,
-  standard_meso_1   = kegg2_standard_meso_1_unstrat,
-  standard_meso_2   = kegg2_standard_meso_2_unstrat,
-  standard_meso_3   = kegg2_standard_meso_3_unstrat,
-  standard_thermo_1 = kegg2_standard_thermo_1_unstrat,
-  standard_thermo_2 = kegg2_standard_thermo_2_unstrat,
-  standard_thermo_3 = kegg2_standard_thermo_3_unstrat
+  custom_meso    = kegg2_custom_meso_unstrat,
+  custom_thermo   = kegg2_custom_thermo_unstrat,
+  standard_meso   = kegg2_standard_meso_unstrat,
+  standard_thermo = kegg2_standard_thermo_unstrat
 )
 
 kegg2_all_unstrat <- bind_rows(kegg_list_unstrat, .id = "df_id") %>%
@@ -551,20 +557,123 @@ kegg2_all_unstrat <- bind_rows(kegg_list_unstrat, .id = "df_id") %>%
 
 
 ```
+
+
+
+
+................................................................................
+                                      Plots
+................................................................................
+
+
+
+...... NSTI PLOTS .......
+
+Barplot weighted NSTI
+```{r}
+
+
+weighted_nsti_summary <- weighted_nsti_all %>%
+  group_by(plot_group, database, group) %>%
+  summarise(
+    mean_NSTI = mean(weighted_NSTI),
+    sd_NSTI = sd(weighted_NSTI),
+    .groups = "drop"
+  )
+
+ggplot(weighted_nsti_summary, aes(x = plot_group, y = mean_NSTI, fill = database)) +
+  geom_col(width = 0.7, colour = "black") +
+  geom_errorbar(
+    aes(ymin = mean_NSTI - sd_NSTI, ymax = mean_NSTI + sd_NSTI),
+    width = 0.2
+  ) +
+  labs(
+    x = NULL,
+    y = "Mean weighted NSTI",
+    fill = "Database"
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    panel.grid.major.x = element_blank(),
+    plot.margin = margin(
+  t = 10,
+  r = 10,
+  b = 00,
+  l = 30
+  ))
+
+ggsave("plots_one/nsti_barplot.png", width = 6, height = 5, dpi = 300)
+
+
+```
+
+box plot over raw NSTI
+```{r}
+
+# ------------------------------------------------------------------------------
+# Boxplot of OTU-level NSTI distributions
+# ------------------------------------------------------------------------------
+
+p_nsti_boxplot <- ggplot(
+  nsti_all,
+  aes(
+    x = plot_group,
+    y = metadata_NSTI,
+    fill = database
+  )
+) +
+  geom_boxplot(
+  width = 0.7,
+  colour = "black",
+  outlier.shape = NA
+) +
+scale_y_continuous(trans = "pseudo_log") +
+  labs(
+    x = NULL,
+    y = "OTU-level NSTI",
+    fill = "Database",
+  ) +
+  theme_bw(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    panel.grid.major.x = element_blank(),
+    legend.position = "right",
+    legend.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold"),
+    plot.margin = margin(
+  t = 10,
+  r = 10,
+  b = 00,
+  l = 30
+)
+  ) +
+  scale_y_continuous(limits = c(0, 1.3))
+
+p_nsti_boxplot
+
+ggsave(
+  filename = "plots_one/otu_level_nsti_boxplot.png",
+  plot = p_nsti_boxplot,
+  width = 5,
+  height = 5.05,
+  dpi = 300
+)
+
+```
+
+
+
+...... KEGG MODULE ABUNDANCE .......
+
 Pathway dominance METHANOGENESIS (ONLY ACET. METH AND HYD. METH)
 ```{r}
 
 group_methanogenesis <- c("CUS00151", "CUS00152")
 
-
-
-metadata_clean <- metadata %>%
-  mutate(Sampledate = mdy(Sampledate)) %>%
-  select(
-    sample = barcode,
-    Sampledate,
-    Reactor_source
-  )
+# ------------------------------------------------------------------------------
+# 1. Convert unstratified table to long format
+# ------------------------------------------------------------------------------
 
 kegg2_all_unstrat_long <- kegg2_all_unstrat %>%
   pivot_longer(
@@ -574,14 +683,30 @@ kegg2_all_unstrat_long <- kegg2_all_unstrat %>%
     values_drop_na = TRUE
   ) %>%
   mutate(
-    abundance = as.numeric(abundance)
+    abundance = as.numeric(abundance),
+    database = recode(
+      database,
+      "Standard" = "PICRUSt2-SC",
+      "Custom" = "MiDAS DB"
+    ),
+    plot_group = paste(temperature, database, sep = " | "),
+    plot_group = factor(
+      plot_group,
+      levels = c(
+        "Mesophilic | PICRUSt2-SC",
+        "Mesophilic | MiDAS DB",
+        "Thermophilic | PICRUSt2-SC",
+        "Thermophilic | MiDAS DB"
+      )
+    )
   )
 
+# ------------------------------------------------------------------------------
+# 2. Summarise pathway abundance
+# ------------------------------------------------------------------------------
 
-meth_plot_df <- kegg2_all_unstrat_long %>%
+meth_barplot_df <- kegg2_all_unstrat_long %>%
   filter(pathway %in% group_methanogenesis) %>%
-  left_join(metadata_clean, by = "sample") %>%
-  filter(!is.na(Sampledate), !is.na(abundance)) %>%
   mutate(
     module_label = factor(
       module_label,
@@ -590,60 +715,79 @@ meth_plot_df <- kegg2_all_unstrat_long %>%
         pull(module_label)
     )
   ) %>%
-  group_by(database, temperature, Sampledate, pathway, module_label) %>%
+  group_by(plot_group, database, temperature, pathway, module_label) %>%
   summarise(
-    abundance = sum(abundance, na.rm = TRUE),
+    mean_abundance = mean(abundance, na.rm = TRUE),
+    sd_abundance = sd(abundance, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
-  arrange(temperature, database, module_label, Sampledate)
+  )
 
-p_methanogenesis <- ggplot(
-  meth_plot_df,
+# ------------------------------------------------------------------------------
+# 3. Barplot
+# ------------------------------------------------------------------------------
+
+p_methanogenesis_barplot <- ggplot(
+  meth_barplot_df,
   aes(
-    x = Sampledate,
-    y = abundance,
-    colour = module_label,
-    linetype = database,
-    group = interaction(module_label, database)
+    x = plot_group,
+    y = mean_abundance,
+    fill = module_label
   )
 ) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 3.2) +
-  facet_wrap(~ temperature, ncol = 2, scales = "free_y") +
-  scale_linetype_manual(
-    values = c(
-      "Custom" = "solid",
-      "Standard" = "dashed"
+  geom_col(
+    width = 0.8,
+    colour = "black",
+    position = position_dodge2(
+      width = 0.8,
+      padding = 0,
+      preserve = "single"
     )
   ) +
-  scale_x_date(
-    breaks = sort(unique(meth_plot_df$Sampledate)),
-    date_labels = "%d %b"
+  geom_errorbar(
+    aes(
+      ymin = mean_abundance - sd_abundance,
+      ymax = mean_abundance + sd_abundance,
+      group = module_label
+    ),
+    width = 0.15,
+    position = position_dodge2(
+      width = 0.8,
+      padding = 0,
+      preserve = "single"
+    )
   ) +
   labs(
-    x = "Sample date",
-    y = "Predicted module abundance",
-    colour = "Module",
-    linetype = "Database",
+    x = NULL,
+    y = "Predicted pathway abundance",
+    fill = "Module"
   ) +
   theme_bw(base_size = 18) +
-  scale_y_continuous(limits = c(0, 90000)) +
   theme(
-    strip.text = element_text(face = "bold", size = 18),
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 23),
+    axis.text.x = element_text(angle = 35, hjust = 1, size = 23),
     axis.text.y = element_text(size = 18),
     axis.title = element_text(size = 20),
-    panel.grid.minor = element_blank(),
-    legend.position = "right",
     legend.title = element_text(face = "bold", size = 20),
     legend.text = element_text(size = 20),
-    plot.title = element_text(face = "bold", size = 20)
+    panel.grid.major.x = element_blank(),
+    plot.margin = margin(
+      t = 10,
+      r = 10,
+      b = 0,
+      l = 120
+    )
   )
 
-ggsave(filename = "plots/kegg/methanogenesis_acet_and_hyd_only2.png", plot = p_methanogenesis,
-       width = 12, height = 8.55, dpi = 300)
+p_methanogenesis_barplot
+
+ggsave(filename = "plots_one/methanogenesis_barplot_path_abun.png", plot = p_methanogenesis_barplot,
+       width = 14, height = 11.65, dpi = 300)
 
 ```
+
+
+
+...... KEY SPECIES AND THEIR NSTI .......
+
 Strat path abun contrib stacked barplot (KEGG)
 ```{r}
 
@@ -661,10 +805,9 @@ library(ggplot2)
 # 1. Settings
 # ------------------------------------------------------------------------------
 
-replicate_to_plot <- "2"
 top_n_species <- 5
 
-out_base <- "plots/kegg/species_contribution"
+out_base <- "plots_one/kegg/species_contribution"
 dir.create(out_base, recursive = TRUE, showWarnings = FALSE)
 
 # ------------------------------------------------------------------------------
@@ -672,31 +815,22 @@ dir.create(out_base, recursive = TRUE, showWarnings = FALSE)
 # ------------------------------------------------------------------------------
 
 nsti_list <- list(
-  custom_meso_1     = nsti_custom_meso_1,
-  custom_meso_2     = nsti_custom_meso_2,
-  custom_meso_3     = nsti_custom_meso_3,
-  custom_thermo_1   = nsti_custom_thermo_1,
-  custom_thermo_2   = nsti_custom_thermo_2,
-  custom_thermo_3   = nsti_custom_thermo_3,
-  standard_meso_1   = nsti_standard_meso_1,
-  standard_meso_2   = nsti_standard_meso_2,
-  standard_meso_3   = nsti_standard_meso_3,
-  standard_thermo_1 = nsti_standard_thermo_1,
-  standard_thermo_2 = nsti_standard_thermo_2,
-  standard_thermo_3 = nsti_standard_thermo_3
+  custom_meso     = nsti_custom_meso,
+  custom_thermo   = nsti_custom_thermo,
+  standard_meso   = nsti_standard_meso,
+  standard_thermo = nsti_standard_thermo
 )
 
 nsti_all <- bind_rows(nsti_list, .id = "df_id") %>%
   separate(
     df_id,
-    into = c("database", "temperature", "replicate"),
+    into = c("database", "temperature"),
     sep = "_",
     remove = FALSE
   ) %>%
   transmute(
     database = str_to_lower(database),
     temperature = str_to_lower(temperature),
-    replicate = as.character(replicate),
     taxon = str_trim(sequence),
     NSTI = as.numeric(metadata_NSTI)
   )
@@ -709,12 +843,11 @@ kegg_tax_nsti <- kegg_tax %>%
   mutate(
     taxon = str_trim(taxon),
     database = str_to_lower(database),
-    temperature = str_to_lower(temperature),
-    replicate = as.character(replicate)
+    temperature = str_to_lower(temperature)
   ) %>%
   left_join(
     nsti_all,
-    by = c("database", "temperature", "replicate", "taxon")
+    by = c("database", "temperature", "taxon")
   ) %>%
   mutate(
     Species_clean = case_when(
@@ -722,7 +855,28 @@ kegg_tax_nsti <- kegg_tax %>%
       TRUE ~ Species
     ),
     Species_clean = str_replace_all(Species_clean, "^s__", ""),
-    Species_clean = str_replace_all(Species_clean, "^g__", "")
+    Species_clean = str_replace_all(Species_clean, "^g__", ""),
+    
+    Phylum_clean = case_when(
+      is.na(Phylum) | Phylum == "" | Phylum == "p__" ~ "unclassified_phylum",
+      TRUE ~ Phylum
+    ),
+    Phylum_clean = str_replace_all(Phylum_clean, "^p__", ""),
+    
+    Family_clean = case_when(
+      is.na(Family) | Family == "" | Family == "f__" ~ "unclassified_family",
+      TRUE ~ Family
+    ),
+    Family_clean = str_replace_all(Family_clean, "^f__", ""),
+    
+    Species_legend = paste0(
+      Species_clean,
+      " (",
+      Phylum_clean,
+      "; ",
+      Family_clean,
+      ")"
+    )
   )
 
 # ------------------------------------------------------------------------------
@@ -742,19 +896,18 @@ pathway_groups <- list(
 top5_species_nsti_df <- imap_dfr(pathway_groups, function(pathway_group, group_name) {
   
   kegg_tax_nsti %>%
-    filter(
-      function. %in% pathway_group,
-      replicate == replicate_to_plot
-    ) %>%
+    filter(function. %in% pathway_group) %>%
     group_by(
       group = group_name,
       function.,
       module_label,
       database,
       temperature,
-      replicate,
       sample,
-      Species_clean
+      Phylum_clean,
+      Family_clean,
+      Species_clean,
+      Species_legend
     ) %>%
     summarise(
       taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
@@ -772,7 +925,7 @@ top5_species_nsti_df <- imap_dfr(pathway_groups, function(pathway_group, group_n
       min_NSTI = if_else(is.infinite(min_NSTI), NA_real_, min_NSTI),
       max_NSTI = if_else(is.infinite(max_NSTI), NA_real_, max_NSTI)
     ) %>%
-    group_by(group, function., module_label, database, temperature, replicate, sample) %>%
+    group_by(group, function., module_label, database, temperature, sample) %>%
     mutate(
       percent_contribution = 100 * taxon_function_abun / sum(taxon_function_abun, na.rm = TRUE)
     ) %>%
@@ -801,10 +954,7 @@ make_species_contribution_plots <- function(pathway_group, group_name) {
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   
   df_group <- kegg_tax_nsti %>%
-    filter(
-      function. %in% pathway_group,
-      replicate == replicate_to_plot
-    )
+    filter(function. %in% pathway_group)
   
   top_species <- top5_species_nsti_df %>%
     filter(group == group_name) %>%
@@ -813,9 +963,9 @@ make_species_contribution_plots <- function(pathway_group, group_name) {
       function.,
       database,
       temperature,
-      replicate,
       sample,
       Species_clean,
+      Species_legend,
       is_top_species
     )
   
@@ -826,18 +976,17 @@ make_species_contribution_plots <- function(pathway_group, group_name) {
         "function.",
         "database",
         "temperature",
-        "replicate",
         "sample",
-        "Species_clean"
+        "Species_clean",
+        "Species_legend"
       )
     ) %>%
     mutate(
-      Species_plot = if_else(is.na(is_top_species), "Other", Species_clean)
+      Species_plot = if_else(is.na(is_top_species), "Other", Species_legend)
     ) %>%
     group_by(
       database,
       temperature,
-      replicate,
       sample,
       function.,
       module_label,
@@ -847,27 +996,32 @@ make_species_contribution_plots <- function(pathway_group, group_name) {
       taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
       .groups = "drop"
     ) %>%
-    group_by(database, temperature, replicate, sample, function., module_label) %>%
+    group_by(database, temperature, sample, function., module_label) %>%
     mutate(
       percent_contribution = 100 * taxon_function_abun / sum(taxon_function_abun, na.rm = TRUE)
     ) %>%
     ungroup() %>%
     mutate(
       sample_group = paste(
-        str_to_title(database),
         recode(
           temperature,
           meso = "Mesophilic",
           thermo = "Thermophilic"
-        )
+        ),
+        recode(
+          database,
+          standard = "PICRUSt2-SC",
+          custom = "MiDAS DB"
+        ),
+        sep = " | "
       ),
       sample_group = factor(
         sample_group,
         levels = c(
-          "Custom Mesophilic",
-          "Custom Thermophilic",
-          "Standard Mesophilic",
-          "Standard Thermophilic"
+          "Mesophilic | PICRUSt2-SC",
+          "Mesophilic | MiDAS DB",
+          "Thermophilic | PICRUSt2-SC",
+          "Thermophilic | MiDAS DB"
         )
       ),
       Species_plot = factor(
@@ -907,7 +1061,7 @@ make_species_contribution_plots <- function(pathway_group, group_name) {
       labs(
         x = NULL,
         y = "Contribution to pathway abundance (%)",
-        fill = "Species",
+        fill = "Species"
       ) +
       theme_bw(base_size = 20) +
       theme(
@@ -918,15 +1072,15 @@ make_species_contribution_plots <- function(pathway_group, group_name) {
         panel.grid.minor = element_blank(),
         legend.position = "right",
         legend.title = element_text(face = "bold", size = 22),
-        legend.text = element_text(size = 20, face = "italic"),
+        legend.text = element_text(size = 22, face = "italic"),
         strip.text = element_text(size = 20, face = "bold"),
         plot.title = element_text(size = 22, face = "bold"),
         plot.margin = margin(
-  t = 0,
-  r = 0,
-  b = 0,
-  l = 80
-)
+          t = 0,
+          r = 0,
+          b = 0,
+          l = 130
+        )
       ) +
       guides(
         fill = guide_legend(
@@ -939,8 +1093,8 @@ make_species_contribution_plots <- function(pathway_group, group_name) {
     ggsave(
       filename = file.path(out_dir, paste0(safe_name, "_top5_per_sample_species_contribution.png")),
       plot = p,
-      width = 10,
-      height = 9,
+      width = 15,
+      height = 11.6,
       dpi = 300
     )
     
@@ -973,8 +1127,13 @@ plots_acidogenesis <- make_species_contribution_plots(
 meth <- kegg_species %>%
   filter(function. == "CUS00151")
 
-
 ```
+
+
+
+
+
+
 ................................................................................
                         Filtering for module completeness
 ................................................................................
@@ -1037,40 +1196,20 @@ kegg_module_df <- tibble(
 # 2. Read stratified KEGG contribution files
 # ------------------------------------------------------------------------------
 
-kegg2_custom_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode75/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+
+kegg2_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
-kegg2_custom_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+
+kegg2_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
-kegg2_custom_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode28/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+
+kegg2_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
-kegg2_custom_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode87/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
 
-kegg2_custom_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_custom_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode40/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode75/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode28/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode87/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
-  filter(function. %in% kegg_modules)
-
-kegg2_standard_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode40/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+kegg2_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
   filter(function. %in% kegg_modules)
 
 # ------------------------------------------------------------------------------
@@ -1078,31 +1217,22 @@ kegg2_standard_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_sa
 # ------------------------------------------------------------------------------
 
 kegg_list <- list(
-  custom_meso_1     = kegg2_custom_meso_1,
-  custom_meso_2     = kegg2_custom_meso_2,
-  custom_meso_3     = kegg2_custom_meso_3,
-  custom_thermo_1   = kegg2_custom_thermo_1,
-  custom_thermo_2   = kegg2_custom_thermo_2,
-  custom_thermo_3   = kegg2_custom_thermo_3,
-  standard_meso_1   = kegg2_standard_meso_1,
-  standard_meso_2   = kegg2_standard_meso_2,
-  standard_meso_3   = kegg2_standard_meso_3,
-  standard_thermo_1 = kegg2_standard_thermo_1,
-  standard_thermo_2 = kegg2_standard_thermo_2,
-  standard_thermo_3 = kegg2_standard_thermo_3
+  custom_meso     = kegg2_custom_meso,
+  custom_thermo   = kegg2_custom_thermo,
+  standard_meso   = kegg2_standard_meso,
+  standard_thermo = kegg2_standard_thermo
 )
 
 kegg_all <- bind_rows(kegg_list, .id = "df_id") %>%
   separate(
     df_id,
-    into = c("database", "temperature", "replicate"),
+    into = c("database", "temperature"),
     sep = "_",
     remove = FALSE
   ) %>%
   mutate(
     database = str_to_lower(database),
     temperature = str_to_lower(temperature),
-    replicate = as.character(replicate),
     taxon = str_trim(taxon)
   ) %>%
   left_join(kegg_module_df, by = "function.")
@@ -1120,25 +1250,20 @@ taxonomy_clean <- taxonomy %>%
 # ------------------------------------------------------------------------------
 
 nsti_custom_list <- list(
-  custom_meso_1   = nsti_custom_meso_1,
-  custom_meso_2   = nsti_custom_meso_2,
-  custom_meso_3   = nsti_custom_meso_3,
-  custom_thermo_1 = nsti_custom_thermo_1,
-  custom_thermo_2 = nsti_custom_thermo_2,
-  custom_thermo_3 = nsti_custom_thermo_3
+  custom_meso   = nsti_custom_meso,
+  custom_thermo = nsti_custom_thermo
 )
 
 custom_closest_ref <- bind_rows(nsti_custom_list, .id = "df_id") %>%
   separate(
     df_id,
-    into = c("database", "temperature", "replicate"),
+    into = c("database", "temperature"),
     sep = "_",
     remove = FALSE
   ) %>%
   transmute(
     database = str_to_lower(database),
     temperature = str_to_lower(temperature),
-    replicate = as.character(replicate),
     taxon = str_trim(sequence),
     closest_reference_genome_true = str_trim(Genome_name),
     metadata_NSTI = as.numeric(metadata_NSTI)
@@ -1146,7 +1271,6 @@ custom_closest_ref <- bind_rows(nsti_custom_list, .id = "df_id") %>%
   distinct(
     database,
     temperature,
-    replicate,
     taxon,
     closest_reference_genome_true,
     metadata_NSTI
@@ -1160,10 +1284,8 @@ kegg_tax <- kegg_all %>%
   left_join(taxonomy_clean, by = "taxon") %>%
   left_join(
     custom_closest_ref,
-    by = c("database", "temperature", "replicate", "taxon")
+    by = c("database", "temperature", "taxon")
   )
-
-
 
 # ------------------------------------------------------------------------------
 # 1. Clean EnrichM completeness table
@@ -1193,7 +1315,6 @@ kegg_tax_completeness_filtered <- kegg_tax %>%
   mutate(
     database = str_to_lower(database),
     temperature = str_to_lower(temperature),
-    replicate = as.character(replicate),
     Genome_name_clean = str_remove(closest_reference_genome_true, "\\.fa$"),
     module_label = str_squish(module_label)
   ) %>%
@@ -1276,7 +1397,6 @@ kegg_species_completeness_filtered <- kegg_tax_completeness_filtered %>%
   group_by(
     database,
     temperature,
-    replicate,
     sample,
     function.,
     module_label,
@@ -1322,7 +1442,7 @@ kegg_species_completeness_filtered <- kegg_tax_completeness_filtered %>%
     mean_NSTI = if_else(is.nan(mean_NSTI), NA_real_, mean_NSTI),
     median_NSTI = if_else(is.nan(median_NSTI), NA_real_, median_NSTI)
   ) %>%
-  group_by(database, temperature, replicate, sample, function.) %>%
+  group_by(database, temperature, sample, function.) %>%
   mutate(
     rel_contribution = {
       total <- sum(taxon_function_abun, na.rm = TRUE)
@@ -1330,19 +1450,25 @@ kegg_species_completeness_filtered <- kegg_tax_completeness_filtered %>%
     },
     percent_contribution = 100 * rel_contribution
   ) %>%
-ungroup()
-
-
-
+  ungroup()
 
 
 
 
 
 ```
+
+
+
+................................................................................
+                        PLOTS WITH COMPLETENESS-FILTERED DATA
+................................................................................
+
+
+...... KEGG MODULE ABUNDANCE PATHWAY DOMINANCE .......
+
 Pathway dominance METHANOGENESIS (ONLY ACET. METH AND HYD. METH)
 ```{r}
-
 
 # ------------------------------------------------------------------------------
 # 1. Pathway groups
@@ -1390,16 +1516,30 @@ metadata_clean <- metadata %>%
 #    species-level stratified data
 # ------------------------------------------------------------------------------
 
-meth_plot_df <- kegg_species_completeness_filtered %>%
+meth_barplot_df <- kegg_species_completeness_filtered %>%
   filter(function. %in% group_methanogenesis) %>%
   left_join(metadata_clean, by = "sample") %>%
-  filter(!is.na(Sampledate)) %>%
   mutate(
     database = str_to_title(database),
     temperature = recode(
       temperature,
       meso = "Mesophilic",
       thermo = "Thermophilic"
+    ),
+    database = recode(
+      database,
+      "Standard" = "PICRUSt2-SC",
+      "Custom" = "MiDAS DB"
+    ),
+    plot_group = paste(temperature, database, sep = " | "),
+    plot_group = factor(
+      plot_group,
+      levels = c(
+        "Mesophilic | PICRUSt2-SC",
+        "Mesophilic | MiDAS DB",
+        "Thermophilic | PICRUSt2-SC",
+        "Thermophilic | MiDAS DB"
+      )
     ),
     module_label = factor(
       module_label,
@@ -1408,88 +1548,196 @@ meth_plot_df <- kegg_species_completeness_filtered %>%
         pull(module_label)
     )
   ) %>%
-  group_by(database, temperature, Sampledate, function., module_label) %>%
+  filter(!is.na(plot_group)) %>%
+  group_by(plot_group, database, temperature, function., module_label) %>%
   summarise(
     abundance = sum(taxon_function_abun, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
-  arrange(temperature, database, module_label, Sampledate)
+  )
 
 # ------------------------------------------------------------------------------
 # 4. Plot pathway/module dominance
 # ------------------------------------------------------------------------------
 
-p_methanogenesis <- ggplot(
-  meth_plot_df,
+p_methanogenesis_barplot <- ggplot(
+  meth_barplot_df,
   aes(
-    x = Sampledate,
+    x = plot_group,
     y = abundance,
-    colour = module_label,
-    linetype = database,
-    group = interaction(module_label, database)
+    fill = module_label
   )
 ) +
-  geom_line(linewidth = 0.9) +
-  geom_point(size = 2.2) +
-  facet_wrap(~ temperature, ncol = 2, scales = "free_y") +
-  scale_linetype_manual(
-    values = c(
-      "Custom" = "solid",
-      "Standard" = "dashed"
+  geom_col(
+    width = 0.8,
+    colour = "black",
+    position = position_dodge2(
+      width = 0.8,
+      padding = 0,
+      preserve = "single"
     )
   ) +
-  scale_y_log10(limits = c(750, 90000)) +
-  scale_x_date(
-    date_labels = "%d %b",
-    date_breaks = "3 days"
-  ) +
+  scale_y_continuous(
+  trans = "pseudo_log",
+  limits = c(0, 90000),
+  breaks = c(
+    0,
+    2000,
+    40000,
+    80000
+  )
+) +
   labs(
-    x = "Sample date",
-    y = "Predicted pathway abundance (log10)",
-    colour = "Module",
-    linetype = "Database",
-    title = "Methanogenesis module abundance over time"
+    x = NULL,
+    y = "Predicted pathway abundance (pseudo-log scale)",
+    fill = "Module"
   ) +
   theme_bw(base_size = 18) +
   theme(
-    strip.text = element_text(face = "bold", size = 18),
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 23),
+    axis.text.x = element_text(angle = 35, hjust = 1, size = 23),
     axis.text.y = element_text(size = 18),
     axis.title = element_text(size = 20),
-    panel.grid.minor = element_blank(),
-    legend.position = "right",
     legend.title = element_text(face = "bold", size = 20),
     legend.text = element_text(size = 20),
-    plot.title = element_text(face = "bold", size = 20)
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(
+      t = 10,
+      r = 10,
+      b = 0,
+      l = 120
+    )
   )
 
+p_methanogenesis_barplot
 
 # ------------------------------------------------------------------------------
 # 5. Save
 # ------------------------------------------------------------------------------
 
-
 ggsave(
-  filename = "plots/kegg/completeness_filtered/pathway_dominance/methanogenesis_acet_hyd_only2.png",
-  plot = p_methanogenesis,
-  width = 12,
-  height = 8.55,
+  filename = "plots_one/pathway_abundance_filtered.png",
+  plot = p_methanogenesis_barplot,
+  width = 14,
+  height = 11.77,
   dpi = 300
 )
 
 ```
+
+...... KEGG MODULE ABUNDANCE PER-SPECIES PLOTS .......
+
 PER-SPECIES CONTRIBUTION (ALL GROUPS)
 ```{r}
 
+# ------------------------------------------------------------------------------
+# 3. Re-collapse to species level
+# ------------------------------------------------------------------------------
+
+kegg_species_completeness_filtered <- kegg_tax_completeness_filtered %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    ),
+    Genus = if_else(
+      is.na(Genus) | Genus == "" | Genus == "g__",
+      "Unclassified_genus",
+      Genus
+    ),
+    Phylum = if_else(
+      is.na(Phylum) | Phylum == "" | Phylum == "p__",
+      "Unclassified_phylum",
+      Phylum
+    ),
+    Family = if_else(
+      is.na(Family) | Family == "" | Family == "f__",
+      "Unclassified_family",
+      Family
+    ),
+    Species = str_replace_all(Species, "^s__", ""),
+    Genus = str_replace_all(Genus, "^g__", ""),
+    Phylum = str_replace_all(Phylum, "^p__", ""),
+    Family = str_replace_all(Family, "^f__", ""),
+    Species = str_replace_all(Species, "_", " "),
+    Genus = str_replace_all(Genus, "_", " "),
+    Species = str_squish(Species),
+    Genus = str_squish(Genus),
+    Phylum = str_squish(Phylum),
+    Family = str_squish(Family),
+    Species = if_else(
+      str_detect(Species, "^midas s [0-9]+$"),
+      str_replace_all(Species, " ", "_"),
+      Species
+    )
+  ) %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    module_label,
+    Phylum,
+    Family,
+    Genus,
+    Species
+  ) %>%
+  summarise(
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_rel_function_abun = sum(taxon_rel_function_abun, na.rm = TRUE),
+    
+    n_asvs = n_distinct(taxon),
+    
+    closest_reference_genomes = {
+      x <- sort(unique(na.omit(closest_reference_genome_true)))
+      if (length(x) == 0) NA_character_ else paste(x, collapse = "; ")
+    },
+    
+    n_closest_reference_genomes = n_distinct(
+      closest_reference_genome_true,
+      na.rm = TRUE
+    ),
+    
+    mean_NSTI = mean(metadata_NSTI, na.rm = TRUE),
+    median_NSTI = median(metadata_NSTI, na.rm = TRUE),
+    n_asvs_with_NSTI = sum(!is.na(metadata_NSTI)),
+    
+    n_asvs_with_complete_closest_MAG = sum(
+      database == "custom" & complete_module_in_closest_MAG,
+      na.rm = TRUE
+    ),
+    
+    n_asvs_with_incomplete_closest_MAG = sum(
+      database == "custom" & !complete_module_in_closest_MAG,
+      na.rm = TRUE
+    ),
+    
+    .groups = "drop"
+  ) %>%
+  mutate(
+    mean_NSTI = if_else(is.nan(mean_NSTI), NA_real_, mean_NSTI),
+    median_NSTI = if_else(is.nan(median_NSTI), NA_real_, median_NSTI)
+  ) %>%
+  group_by(database, temperature, sample, function.) %>%
+  mutate(
+    rel_contribution = {
+      total <- sum(taxon_function_abun, na.rm = TRUE)
+      if (total > 0) taxon_function_abun / total else rep(0, n())
+    },
+    percent_contribution = 100 * rel_contribution
+  ) %>%
+  ungroup()
 
 # ------------------------------------------------------------------------------
 # 1. Settings
 # ------------------------------------------------------------------------------
 
-replicate_to_plot <- "2"
 top_n_species <- 5
 
-out_base <- "plots/kegg/completeness_filtered/species_contribution"
+out_base <- "plots_one/completeness_filtered/species_contribution"
 dir.create(out_base, recursive = TRUE, showWarnings = FALSE)
 
 # ------------------------------------------------------------------------------
@@ -1543,14 +1791,41 @@ kegg_species_cf <- kegg_species_completeness_filtered %>%
   mutate(
     database = str_to_lower(database),
     temperature = str_to_lower(temperature),
-    replicate = as.character(replicate),
+    
     Species_clean = Species,
     Species_clean = if_else(
       is.na(Species_clean) | Species_clean == "",
       "Unclassified_species",
       Species_clean
     ),
-    Species_clean = str_squish(Species_clean)
+    Species_clean = str_squish(Species_clean),
+    
+    Phylum_clean = Phylum,
+    Phylum_clean = if_else(
+      is.na(Phylum_clean) | Phylum_clean == "" | Phylum_clean == "p__",
+      "unclassified_phylum",
+      Phylum_clean
+    ),
+    Phylum_clean = str_replace_all(Phylum_clean, "^p__", ""),
+    Phylum_clean = str_squish(Phylum_clean),
+    
+    Family_clean = Family,
+    Family_clean = if_else(
+      is.na(Family_clean) | Family_clean == "" | Family_clean == "f__",
+      "unclassified_family",
+      Family_clean
+    ),
+    Family_clean = str_replace_all(Family_clean, "^f__", ""),
+    Family_clean = str_squish(Family_clean),
+    
+    Species_legend = paste0(
+      Species_clean,
+      " (",
+      Phylum_clean,
+      "; ",
+      Family_clean,
+      ")"
+    )
   )
 
 # ------------------------------------------------------------------------------
@@ -1561,20 +1836,19 @@ kegg_species_cf <- kegg_species_completeness_filtered %>%
 top5_species_cf_df <- imap_dfr(pathway_groups, function(pathway_group, group_name) {
   
   kegg_species_cf %>%
-    filter(
-      function. %in% pathway_group,
-      replicate == replicate_to_plot
-    ) %>%
+    filter(function. %in% pathway_group) %>%
     group_by(
       group = group_name,
       function.,
       module_label,
       database,
       temperature,
-      replicate,
       sample,
       Genus,
-      Species_clean
+      Species_clean,
+      Phylum_clean,
+      Family_clean,
+      Species_legend
     ) %>%
     summarise(
       taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
@@ -1605,7 +1879,7 @@ top5_species_cf_df <- imap_dfr(pathway_groups, function(pathway_group, group_nam
       mean_NSTI = if_else(is.nan(mean_NSTI), NA_real_, mean_NSTI),
       median_NSTI = if_else(is.nan(median_NSTI), NA_real_, median_NSTI)
     ) %>%
-    group_by(group, function., module_label, database, temperature, replicate, sample) %>%
+    group_by(group, function., module_label, database, temperature, sample) %>%
     mutate(
       percent_contribution = {
         total <- sum(taxon_function_abun, na.rm = TRUE)
@@ -1637,10 +1911,7 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   
   df_group <- kegg_species_cf %>%
-    filter(
-      function. %in% pathway_group,
-      replicate == replicate_to_plot
-    )
+    filter(function. %in% pathway_group)
   
   top_species <- top5_species_cf_df %>%
     filter(group == group_name) %>%
@@ -1649,9 +1920,9 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
       function.,
       database,
       temperature,
-      replicate,
       sample,
       Species_clean,
+      Species_legend,
       is_top_species
     )
   
@@ -1662,18 +1933,17 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
         "function.",
         "database",
         "temperature",
-        "replicate",
         "sample",
-        "Species_clean"
+        "Species_clean",
+        "Species_legend"
       )
     ) %>%
     mutate(
-      Species_plot = if_else(is.na(is_top_species), "Other", Species_clean)
+      Species_plot = if_else(is.na(is_top_species), "Other", Species_legend)
     ) %>%
     group_by(
       database,
       temperature,
-      replicate,
       sample,
       function.,
       module_label,
@@ -1683,7 +1953,7 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
       taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
       .groups = "drop"
     ) %>%
-    group_by(database, temperature, replicate, sample, function., module_label) %>%
+    group_by(database, temperature, sample, function., module_label) %>%
     mutate(
       percent_contribution = {
         total <- sum(taxon_function_abun, na.rm = TRUE)
@@ -1693,20 +1963,25 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
     ungroup() %>%
     mutate(
       sample_group = paste(
-        str_to_title(database),
         recode(
           temperature,
           meso = "Mesophilic",
           thermo = "Thermophilic"
-        )
+        ),
+        recode(
+          database,
+          standard = "PICRUSt2-SC",
+          custom = "MiDAS DB"
+        ),
+        sep = " | "
       ),
       sample_group = factor(
         sample_group,
         levels = c(
-          "Custom Mesophilic",
-          "Custom Thermophilic",
-          "Standard Mesophilic",
-          "Standard Thermophilic"
+          "Mesophilic | PICRUSt2-SC",
+          "Mesophilic | MiDAS DB",
+          "Thermophilic | PICRUSt2-SC",
+          "Thermophilic | MiDAS DB"
         )
       ),
       Species_plot = fct_relevel(Species_plot, "Other", after = Inf)
@@ -1718,11 +1993,6 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
     
     df_mod <- plot_df %>%
       filter(function. == module_id)
-    
-    module_title <- df_mod %>%
-      distinct(module_label) %>%
-      pull(module_label) %>%
-      first()
     
     p <- ggplot(
       df_mod,
@@ -1740,9 +2010,7 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
       labs(
         x = NULL,
         y = "Contribution to pathway abundance (%)",
-        fill = "Species",
-        title = module_title,
-        subtitle = paste0(module_id, " — top ", top_n_species, " species per sample")
+        fill = "Species"
       ) +
       theme_bw(base_size = 12) +
       theme(
@@ -1757,19 +2025,20 @@ make_species_contribution_plots_cf <- function(pathway_group, group_name) {
         strip.text = element_text(size = 20, face = "bold"),
         plot.title = element_text(size = 22, face = "bold"),
         plot.margin = margin(
-  t = 0,
-  r = 0,
-  b = 0,
-  l = 80
-))
+          t = 0,
+          r = 0,
+          b = 0,
+          l = 140
+        )
+      )
     
     safe_name <- str_replace_all(module_id, "[^A-Za-z0-9_\\-]", "_")
     
     ggsave(
       filename = file.path(out_dir, paste0(safe_name, "_top5_per_sample_species_contribution_completeness_filtered.png")),
       plot = p,
-      width = 11,
-      height = 9.,
+      width = 16,
+      height = 11.6,
       dpi = 300
     )
     
@@ -1799,5 +2068,712 @@ plots_acidogenesis_cf <- make_species_contribution_plots_cf(
   group_name = "acidogenesis"
 )
 
+```
+
+
+
+
+................................................................................
+                                PECTIN DEGRADATION
+................................................................................
+
+
+dfs
+```{r}
+
+gene_list <- read.csv(
+  "C:/Users/lasse/Desktop/wd/25/df/26/pectin_deg_genes.tsv",
+  header = TRUE, sep = "\t"
+)
+
+ec_custom_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode75/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode28/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_custom_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode87/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode40/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode75/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode28/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode87/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode40/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+
+
+
+
+```
+
+
+```{r}
+
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+
+# ------------------------------------------------------------------------------
+# 1. Settings
+# ------------------------------------------------------------------------------
+
+dir.create("plots/ec", recursive = TRUE, showWarnings = FALSE)
+
+# ------------------------------------------------------------------------------
+# 2. Metadata
+# ------------------------------------------------------------------------------
+
+metadata_clean <- metadata %>%
+  mutate(Sampledate = mdy(Sampledate)) %>%
+  select(
+    sample = barcode,
+    Sampledate,
+    Reactor_source
+  )
+
+# ------------------------------------------------------------------------------
+# 3. EC metadata
+# ------------------------------------------------------------------------------
+
+gene_meta <- gene_list %>%
+  distinct(EC, enzyme, class, CAZY, KO, substrate, product) %>%
+  rename(function. = EC)
+
+# ------------------------------------------------------------------------------
+# 4. Combine stratified EC contribution dfs
+# ------------------------------------------------------------------------------
+
+ec_list <- list(
+  custom_meso_1     = ec_custom_meso_1,
+  custom_meso_2     = ec_custom_meso_2,
+  custom_meso_3     = ec_custom_meso_3,
+  custom_thermo_1   = ec_custom_thermo_1,
+  custom_thermo_2   = ec_custom_thermo_2,
+  custom_thermo_3   = ec_custom_thermo_3,
+  standard_meso_1   = ec_standard_meso_1,
+  standard_meso_2   = ec_standard_meso_2,
+  standard_meso_3   = ec_standard_meso_3,
+  standard_thermo_1 = ec_standard_thermo_1,
+  standard_thermo_2 = ec_standard_thermo_2,
+  standard_thermo_3 = ec_standard_thermo_3
+)
+
+ec_all_strat <- bind_rows(ec_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature", "replicate"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  mutate(
+    database = str_to_title(database),
+    temperature = recode(
+      temperature,
+      meso = "Mesophilic",
+      thermo = "Thermophilic"
+    ),
+    replicate = as.character(replicate)
+  ) %>%
+  left_join(gene_meta, by = "function.")
+
+# ------------------------------------------------------------------------------
+# 5. Reconstruct unstratified EC abundance from stratified data
+# ------------------------------------------------------------------------------
+
+ec_unstrat_reconstructed <- ec_all_strat %>%
+  left_join(metadata_clean, by = "sample") %>%
+  filter(!is.na(Sampledate)) %>%
+  group_by(
+    database,
+    temperature,
+    replicate,
+    sample,
+    Sampledate,
+    function.,
+    enzyme,
+    class,
+    substrate,
+    product
+  ) %>%
+  summarise(
+    abundance = sum(taxon_function_abun, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    ec_label = paste0(function., " — ", enzyme),
+    ec_label = str_squish(ec_label)
+  ) %>%
+  arrange(temperature, database, ec_label, Sampledate)
+
+# ------------------------------------------------------------------------------
+# 6. Plot function: one plot per temperature
+# ------------------------------------------------------------------------------
+
+make_ec_timeseries_plot <- function(temp_name) {
+  
+  df_temp <- ec_unstrat_reconstructed %>%
+    filter(temperature == temp_name)
+  
+    ggplot(
+    df_temp,
+    aes(
+      x = Sampledate,
+      y = abundance,
+      colour = ec_label,
+      linetype = database,
+      group = interaction(ec_label, database)
+    )
+  ) +
+    geom_line(linewidth = 0.8) +
+    geom_point(size = 2) +
+    scale_linetype_manual(
+      values = c(
+        "Custom" = "solid",
+        "Standard" = "dashed"
+      )
+    ) +
+    scale_y_continuous(trans = "pseudo_log") +
+    scale_x_date(
+      date_labels = "%d %b",
+      date_breaks = "3 days"
+    ) +
+    labs(
+      x = "Sample date",
+      y = "Predicted EC abundance",
+      colour = "EC / enzyme",
+      linetype = "Database",
+      title = paste0(temp_name, " pectin-degradation EC abundance over time")
+    ) +
+    theme_bw(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.minor = element_blank(),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
+      plot.title = element_text(face = "bold")
+    )
+}
+
+# ------------------------------------------------------------------------------
+# 7. Create plots
+# ------------------------------------------------------------------------------
+
+p_ec_meso <- make_ec_timeseries_plot("Mesophilic")
+p_ec_thermo <- make_ec_timeseries_plot("Thermophilic")
+
+p_ec_meso
+p_ec_thermo
+
+# ------------------------------------------------------------------------------
+# 8. Save plots
+# ------------------------------------------------------------------------------
+
+ggsave(
+  filename = "plots/ec/ec_abundance_timeseries_mesophilic.png",
+  plot = p_ec_meso,
+  width = 12,
+  height = 8,
+  dpi = 300
+)
+
+ggsave(
+  filename = "plots/ec/ec_abundance_timeseries_thermophilic.png",
+  plot = p_ec_thermo,
+  width = 12,
+  height = 8,
+  dpi = 300
+)
+
+```
+
+Time series EC abun plot (only PME and FAE)
+```{r}
+
+gene_list <- read.csv(
+  "C:/Users/lasse/Desktop/wd/25/df/26/pectin_deg_genes_reduced.tsv",
+  header = TRUE, sep = "\t"
+)
+
+ec_custom_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode75/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode28/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_custom_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode87/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_custom_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode40/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_meso_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode75/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_meso_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_meso_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode28/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_thermo_1 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode87/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_thermo_2 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+ec_standard_thermo_3 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode40/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+# ------------------------------------------------------------------------------
+# 1. Settings
+# ------------------------------------------------------------------------------
+
+dir.create("plots/ec", recursive = TRUE, showWarnings = FALSE)
+
+# ------------------------------------------------------------------------------
+# 2. Metadata
+# ------------------------------------------------------------------------------
+
+metadata_clean <- metadata %>%
+  mutate(Sampledate = mdy(Sampledate)) %>%
+  select(
+    sample = barcode,
+    Sampledate,
+    Reactor_source
+  )
+
+# ------------------------------------------------------------------------------
+# 3. EC metadata
+# ------------------------------------------------------------------------------
+
+gene_meta <- gene_list %>%
+  distinct(EC, enzyme, class, CAZY, KO, substrate, product) %>%
+  rename(function. = EC)
+
+# ------------------------------------------------------------------------------
+# 4. Combine stratified EC contribution dfs
+# ------------------------------------------------------------------------------
+
+ec_list <- list(
+  custom_meso_1     = ec_custom_meso_1,
+  custom_meso_2     = ec_custom_meso_2,
+  custom_meso_3     = ec_custom_meso_3,
+  custom_thermo_1   = ec_custom_thermo_1,
+  custom_thermo_2   = ec_custom_thermo_2,
+  custom_thermo_3   = ec_custom_thermo_3,
+  standard_meso_1   = ec_standard_meso_1,
+  standard_meso_2   = ec_standard_meso_2,
+  standard_meso_3   = ec_standard_meso_3,
+  standard_thermo_1 = ec_standard_thermo_1,
+  standard_thermo_2 = ec_standard_thermo_2,
+  standard_thermo_3 = ec_standard_thermo_3
+)
+
+ec_all_strat <- bind_rows(ec_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature", "replicate"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  mutate(
+    database = str_to_title(database),
+    temperature = recode(
+      temperature,
+      meso = "Mesophilic",
+      thermo = "Thermophilic"
+    ),
+    replicate = as.character(replicate)
+  ) %>%
+  left_join(gene_meta, by = "function.")
+
+# ------------------------------------------------------------------------------
+# 5. Reconstruct unstratified EC abundance from stratified data
+# ------------------------------------------------------------------------------
+
+ec_unstrat_reconstructed <- ec_all_strat %>%
+  left_join(metadata_clean, by = "sample") %>%
+  filter(!is.na(Sampledate)) %>%
+  group_by(
+    database,
+    temperature,
+    replicate,
+    sample,
+    Sampledate,
+    function.,
+    enzyme,
+    class,
+    substrate,
+    product
+  ) %>%
+  summarise(
+    abundance = sum(taxon_function_abun, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    ec_label = paste0(function., " — ", enzyme),
+    ec_label = str_squish(ec_label)
+  ) %>%
+  arrange(temperature, database, ec_label, Sampledate)
+
+# ------------------------------------------------------------------------------
+# 6. Plot function: one plot per temperature
+# ------------------------------------------------------------------------------
+
+make_ec_timeseries_plot <- function(temp_name) {
+  
+  df_temp <- ec_unstrat_reconstructed %>%
+    filter(temperature == temp_name)
+  
+    ggplot(
+    df_temp,
+    aes(
+      x = Sampledate,
+      y = abundance,
+      colour = ec_label,
+      linetype = database,
+      group = interaction(ec_label, database)
+    )
+  ) +
+    geom_line(linewidth = 0.8) +
+    geom_point(size = 2) +
+    scale_linetype_manual(
+      values = c(
+        "Custom" = "solid",
+        "Standard" = "dashed"
+      )
+    ) +
+    scale_y_continuous(trans = "log10") +
+    scale_x_date(
+      date_labels = "%d %b",
+      date_breaks = "3 days"
+    ) +
+    labs(
+      x = "Sample date",
+      y = "Predicted EC abundance",
+      colour = "EC / enzyme",
+      linetype = "Database",
+      title = paste0(temp_name, " pectin-degradation EC abundance over time")
+    ) +
+    theme_bw(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.minor = element_blank(),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
+      plot.title = element_text(face = "bold")
+    )
+}
+
+# ------------------------------------------------------------------------------
+# 7. Create plots
+# ------------------------------------------------------------------------------
+
+p_ec_meso <- make_ec_timeseries_plot("Mesophilic")
+p_ec_thermo <- make_ec_timeseries_plot("Thermophilic")
+
+p_ec_meso
+p_ec_thermo
+
+# ------------------------------------------------------------------------------
+# 8. Save plots
+# ------------------------------------------------------------------------------
+
+ggsave(
+  filename = "plots/ec/ec_abundance_timeseries_mesophilic.png",
+  plot = p_ec_meso,
+  width = 6,
+  height = 4,
+  dpi = 300
+)
+
+ggsave(
+  filename = "plots/ec/ec_comb.png",
+  plot = p,
+  width = 12,
+  height = 4,
+  dpi = 300
+)
+
+p <- p_ec_meso | p_ec_thermo
+
+```
+
+Species contribution
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(forcats)
+library(ggplot2)
+library(purrr)
+
+# ------------------------------------------------------------------------------
+# 1. Settings
+# ------------------------------------------------------------------------------
+
+top_n_species <- 5
+
+out_base <- "plots/ec/species_contribution_timepoint2"
+dir.create(out_base, recursive = TRUE, showWarnings = FALSE)
+
+target_ecs <- unique(gene_list$EC)
+
+# ------------------------------------------------------------------------------
+# 2. Combine only the second time point dfs
+# ------------------------------------------------------------------------------
+
+ec_list_t2 <- list(
+  custom_meso     = ec_custom_meso_2,
+  custom_thermo   = ec_custom_thermo_2,
+  standard_meso   = ec_standard_meso_2,
+  standard_thermo = ec_standard_thermo_2
+)
+
+ec_all_t2 <- bind_rows(ec_list_t2, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  filter(function. %in% target_ecs) %>%
+  mutate(
+    database = str_to_lower(database),
+    temperature = str_to_lower(temperature),
+    taxon = str_trim(taxon)
+  )
+
+# ------------------------------------------------------------------------------
+# 3. Add EC labels and taxonomy
+# ------------------------------------------------------------------------------
+
+ec_label_df <- gene_list %>%
+  distinct(EC, enzyme) %>%
+  rename(
+    function. = EC,
+    ec_label = enzyme
+  )
+
+taxonomy_clean <- taxonomy %>%
+  mutate(across(everything(), ~ str_trim(.x))) %>%
+  rename(taxon = OTU)
+
+ec_species <- ec_all_t2 %>%
+  left_join(ec_label_df, by = "function.") %>%
+  left_join(taxonomy_clean, by = "taxon") %>%
+  mutate(
+    Species_clean = Species,
+    Species_clean = if_else(
+      is.na(Species_clean) | Species_clean == "" | Species_clean == "s__",
+      "Unclassified_species",
+      Species_clean
+    ),
+    Species_clean = str_replace_all(Species_clean, "^s__", ""),
+    Species_clean = str_replace_all(Species_clean, "_", " "),
+    Species_clean = str_squish(Species_clean)
+  )
+
+# ------------------------------------------------------------------------------
+# 4. Collapse to species level
+# ------------------------------------------------------------------------------
+
+ec_species_collapsed <- ec_species %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    ec_label,
+    Genus,
+    Species_clean
+  ) %>%
+  summarise(
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    n_asvs = n_distinct(taxon),
+    .groups = "drop"
+  )
+
+# ------------------------------------------------------------------------------
+# 5. Select top 5 contributing species per EC x sample group
+# ------------------------------------------------------------------------------
+
+top5_ec_species <- ec_species_collapsed %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    ec_label
+  ) %>%
+  mutate(
+    percent_contribution = {
+      total <- sum(taxon_function_abun, na.rm = TRUE)
+      if (total > 0) 100 * taxon_function_abun / total else rep(0, n())
+    }
+  ) %>%
+  slice_max(
+    order_by = taxon_function_abun,
+    n = top_n_species,
+    with_ties = FALSE
+  ) %>%
+  ungroup()
+
+write.csv(
+  top5_ec_species,
+  file = file.path(out_base, "top5_species_EC_contribution_timepoint2.csv"),
+  row.names = FALSE
+)
+
+# ------------------------------------------------------------------------------
+# 6. Prepare plotting df: top 5 species + Other
+# ------------------------------------------------------------------------------
+
+top_species_lookup <- top5_ec_species %>%
+  mutate(is_top_species = TRUE) %>%
+  select(
+    database,
+    temperature,
+    sample,
+    function.,
+    Species_clean,
+    is_top_species
+  )
+
+plot_df <- ec_species_collapsed %>%
+  left_join(
+    top_species_lookup,
+    by = c(
+      "database",
+      "temperature",
+      "sample",
+      "function.",
+      "Species_clean"
+    )
+  ) %>%
+  mutate(
+    Species_plot = if_else(is.na(is_top_species), "Other", Species_clean)
+  ) %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    ec_label,
+    Species_plot
+  ) %>%
+  summarise(
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  group_by(database, temperature, sample, function., ec_label) %>%
+  mutate(
+    percent_contribution = {
+      total <- sum(taxon_function_abun, na.rm = TRUE)
+      if (total > 0) 100 * taxon_function_abun / total else rep(0, n())
+    }
+  ) %>%
+  ungroup() %>%
+  mutate(
+    sample_group = paste(
+      str_to_title(database),
+      recode(
+        temperature,
+        meso = "Mesophilic",
+        thermo = "Thermophilic"
+      )
+    ),
+    sample_group = factor(
+      sample_group,
+      levels = c(
+        "Custom Mesophilic",
+        "Custom Thermophilic",
+        "Standard Mesophilic",
+        "Standard Thermophilic"
+      )
+    ),
+    Species_plot = fct_relevel(Species_plot, "Other", after = Inf)
+  )
+
+# ------------------------------------------------------------------------------
+# 7. Make one stacked barplot per EC
+# ------------------------------------------------------------------------------
+
+make_ec_species_plot <- function(ec_id) {
+  
+  df_ec <- plot_df %>%
+    filter(function. == ec_id)
+  
+  ec_title <- df_ec %>%
+    distinct(ec_label) %>%
+    pull(ec_label) %>%
+    first()
+  
+  p <- ggplot(
+    df_ec,
+    aes(
+      x = sample_group,
+      y = percent_contribution,
+      fill = Species_plot
+    )
+  ) +
+    geom_col(width = 0.75, colour = "grey25", linewidth = 0.15) +
+    scale_y_continuous(
+      limits = c(0, 100),
+      expand = expansion(mult = c(0, 0.02))
+    ) +
+    theme_bw(base_size = 12) +
+    labs(
+      x = NULL,
+      y = "Contribution to EC abundance (%)",
+      fill = "Species",
+      title = ec_title,
+      subtitle = paste0(ec_id, " — top ", top_n_species, " species, time point 2")
+    ) +
+    theme(
+      axis.text.x = element_text(angle = 35, hjust = 1),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
+      plot.title = element_text(face = "bold")
+    )
+  
+  safe_name <- str_replace_all(ec_id, "[^A-Za-z0-9_\\-]", "_")
+  
+  ggsave(
+    filename = file.path(
+      out_base,
+      paste0(safe_name, "_top5_species_EC_contribution_timepoint2.png")
+    ),
+    plot = p,
+    width = 5,
+    height = 7,
+    dpi = 300
+  )
+  
+  p
+}
+
+plots_ec_species <- map(target_ecs, make_ec_species_plot)
+names(plots_ec_species) <- target_ecs
+
+plots_ec_species[["3.1.1.11"]]
+plots_ec_species[["3.1.1.73"]]
 
 ```
