@@ -390,7 +390,6 @@ kegg2_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samp
 
 
 
-# collapse to species level
 
 
 
