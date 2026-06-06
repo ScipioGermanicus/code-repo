@@ -1,0 +1,659 @@
+---
+title: "floodgates"
+author: "Lasse Steffensen"
+date: "2026-05-05"
+output: html_document
+---
+
+................................................................................
+                                      dfs
+................................................................................
+
+```{r}
+
+setwd("C:/Users/lasse/Desktop/wd/picrust2/floodgate")
+
+library(tidyverse)
+library(lubridate)
+library(purrr)
+library(forcats)
+library(stringr)
+
+barcodes <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/metadata.txt", header = TRUE, sep = "\t")
+
+metadata <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/seq1_TRUE_metadata2.txt", header = TRUE, sep = "\t")
+
+taxonomy <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/otutable_mappedreads.tsv", header = TRUE, sep = "\t") %>% 
+  select(OTU, Kingdom, Phylum, Class, Order, Family, Genus, Species)
+
+```
+
+KEGG path abun dfs
+```{r}
+
+abun_crashed_barcode08 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode08/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_crashed_barcode55 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode55/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_crashed_barcode67 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode67/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_crashed_barcode79 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode79/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_crashed_barcode91 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode91/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+
+
+abun_healthy_barcode20 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode20/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_healthy_barcode32 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode32/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_healthy_barcode44 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode44/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_healthy_barcode56 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode56/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+abun_healthy_barcode68 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode68/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t")
+
+```
+
+NSTI (weighted) dfs
+```{r}
+
+nsti_crashed_barcode08 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode08/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode55 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode55/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode67 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode67/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode79 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode79/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode91 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode91/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+
+nsti_healthy_barcode20 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode20/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode32 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode32/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode44 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode44/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode56 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode56/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode68 <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode68/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+
+
+weighted_nsti_reference <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/reference/weighted_nsti.tsv", header = TRUE, sep = "\t")
+
+
+```
+
+
+Strat NSTI
+```{r}
+
+nsti_crashed_barcode08_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode08/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode55_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode55/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode67_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode67/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode79_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode79/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_crashed_barcode91_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/crashed/barcode91/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+
+nsti_healthy_barcode20_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode20/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode32_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode32/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode44_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode44/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode56_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode56/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+nsti_healthy_barcode68_strat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/niko_hq_db_data/healthy/barcode68/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+```
+
+................................................................................
+                                      Plots
+................................................................................
+
+
+
+NSTI barplot
+```{r}
+
+library(tidyverse)
+
+# Combine weighted NSTI values
+weighted_nsti_all <- bind_rows(
+  nsti_crashed_barcode08 %>% mutate(group = "Crashed"),
+  nsti_crashed_barcode55 %>% mutate(group = "Crashed"),
+  nsti_crashed_barcode67 %>% mutate(group = "Crashed"),
+  nsti_crashed_barcode79 %>% mutate(group = "Crashed"),
+  nsti_crashed_barcode91 %>% mutate(group = "Crashed"),
+  
+  nsti_healthy_barcode20 %>% mutate(group = "Healthy"),
+  nsti_healthy_barcode32 %>% mutate(group = "Healthy"),
+  nsti_healthy_barcode44 %>% mutate(group = "Healthy"),
+  nsti_healthy_barcode56 %>% mutate(group = "Healthy"),
+  abun_healthy_barcode68 %>% mutate(group = "Healthy"),
+  
+  weighted_nsti_reference %>% mutate(group = "Reference")
+) %>%
+  mutate(
+    group = factor(group, levels = c("Crashed", "Healthy", "Reference"))
+  )
+
+# Summarise mean weighted NSTI per group
+weighted_nsti_summary <- weighted_nsti_all %>%
+  group_by(group) %>%
+  summarise(
+    mean_weighted_NSTI = mean(weighted_NSTI, na.rm = TRUE),
+    sd_weighted_NSTI   = sd(weighted_NSTI, na.rm = TRUE),
+    n                  = n(),
+    se_weighted_NSTI   = sd_weighted_NSTI / sqrt(n),
+    .groups = "drop"
+  )
+
+# Barplot
+p <- ggplot(weighted_nsti_summary, aes(x = group, y = mean_weighted_NSTI, fill = group)) +
+  geom_col(width = 0.7, colour = "black", linewidth = 0.3) +
+  geom_errorbar(
+    aes(
+      ymin = mean_weighted_NSTI - se_weighted_NSTI,
+      ymax = mean_weighted_NSTI + se_weighted_NSTI
+    ),
+    width = 0.2,
+    linewidth = 0.4
+  ) +
+  geom_point(
+    data = weighted_nsti_all,
+    aes(x = group, y = weighted_NSTI),
+    inherit.aes = FALSE,
+    position = position_jitter(width = 0.08, height = 0),
+    size = 2,
+    alpha = 0.8
+  ) +
+  labs(
+    x = NULL,
+    y = "Weighted NSTI",
+    fill = NULL
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(size = 11),
+    axis.text.y = element_text(size = 10),
+    axis.title.y = element_text(size = 12),
+    panel.grid.major.x = element_blank()
+  )
+
+p
+
+ggsave(
+  filename = "weighted_nsti_group_barplot.png",
+  plot = p,
+  width = 6,
+  height = 4,
+  dpi = 300
+)
+
+
+
+```
+
+Apply completeness filter + collapse to species level
+```{r}
+
+
+kegg_modules <- c("CUS00151", #5
+                  "CUS00152", #6
+                  "CUS00153", #7
+                  "CUS00154", #8
+                  "CUS00155", #9
+                  "CUS00039", #10
+                  "CUS00041", #11
+                  "CUS00049", #12
+                  "CUS00052", #13
+                  "CUS00064", #14
+                  "CUS00065", #15
+                  "CUS00066", #16
+                  "CUS00067", #17
+                  "CUS00068", #18
+                  "CUS00069", #19
+                  "CUS00125", #20
+                  "CUS00126", #21
+                  "CUS00127", #22
+                  "CUS00128", #23
+                  "CUS00129", #24
+                  "CUS00133", #25
+                  "CUS00135", #26
+                  "CUS00136", #27
+                  "CUS00137", #28
+                  "CUS00141", #29
+                  "CUS00142", #30
+                  "CUS00143", #31
+                  "CUS00144", #32
+                  "CUS00145", #33
+                  "CUS00146", #34
+                  "M00579") #35
+                  
+                  
+                  
+kegg_modules_labels <- c("Methanogenesis I, acetate => methane", #5
+                         "Methanogenesis II, CO2 => methane", #6
+                         "Methanogenesis III, methanol => methane", #7
+                         "Methanogenesis IV, methylamine => methane", #8
+                         "Methanogenesis V, methanethiol => methane", #9
+                         "Isoleucine degradation II, isoleucine => 2-methylbutyrate", #10
+                         "Leucine degradation II, leucine => 3-methylbutyrate", #11
+                         "Methionine degradation II, L-methionine => 2-oxobutanoate", #12
+                         "Proline degradation II, L-proline => 5-aminovalerate", #13
+                         "Valine degradation II, L-valine => 2-methylpropanoate", #14
+                         "Glycerol degradation I, glycerol => sn-glycerol 3-phosphate => glycerone-P", #15
+                         "Glycerol degradation II, glycerol => dihydroxyacetone => glycerone-P", #16
+                         "Glycerol degradation III, glycerol => 1,3-Propanediol", #17
+                         "Long chain fatty acid beta-oxidation, LFCAs => Acetyl-CoA", #18
+                         "Triacylglycerol degradation, triacylglycerol => glycerol + fatty acid", #19
+                         "Acetyl-CoA fermentation to acetate, acetyl-CoA => acetate", #20
+                         "Acetyl-CoA fermentation to acetate, acetyl-CoA => acetate and formate", #21
+                         "Acetyl-CoA fermentation to succinate and acetate", #22
+                         "Pyruvate fermentation to acetate and lactate", #23
+                         "Pyruvate fermentation to lactate", #24
+                         "Lactate degradation lactate => propionate", #25
+                         "Acetyl-CoA fermentation to butanoate I", #26
+                         "Acetyl-CoA fermentation to butanoate II", #27
+                         "Succinate fermentation to butanoate", #28
+                         "Methylmalonyl-CoA pathway from succinyl-CoA to propanoate", #29
+                         "Reductive acetyl-CoA pathway (Wood-Ljungdahl pathway)", #30
+                         "Syntrophic butyrate degradation, butyrate => acetyl-CoA", #31
+                         "Syntrophic propionate degradation, propionate => acetate", #32
+                         "Reversed WL pathway, acetate => CO2", #33
+                         "WLP-GCS pathway, acetate => CO2", #34
+                         "Pectin degradation") #35
+
+kegg_module_df <- tibble(
+  function. = kegg_modules,
+  module_label = kegg_modules_labels
+)
+
+
+# ------------------------------------------------------------------------------
+# 2. Combine stratified pathway contribution dfs
+# ------------------------------------------------------------------------------
+
+abun_list <- list(
+  crashed_barcode55 = abun_crashed_barcode55,
+  crashed_barcode67 = abun_crashed_barcode67,
+  crashed_barcode79 = abun_crashed_barcode79,
+  crashed_barcode91 = abun_crashed_barcode91,
+  crashed_barcode08 = abun_crashed_barcode08,
+  
+  healthy_barcode20 = abun_healthy_barcode20,
+  healthy_barcode32 = abun_healthy_barcode32,
+  healthy_barcode44 = abun_healthy_barcode44,
+  healthy_barcode56 = abun_healthy_barcode56,
+  healthy_barcode68 = abun_healthy_barcode68
+)
+
+kegg_all <- bind_rows(abun_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("sample_group", "barcode"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  filter(function. %in% kegg_modules) %>%
+  mutate(
+    sample_group = str_to_lower(sample_group),
+    barcode = str_trim(barcode),
+    sample = str_trim(sample),
+    taxon = str_trim(taxon)
+  ) %>%
+  left_join(kegg_module_df, by = "function.")
+
+# ------------------------------------------------------------------------------
+# 3. Clean taxonomy table
+# ------------------------------------------------------------------------------
+
+taxonomy_clean <- taxonomy %>%
+  mutate(across(everything(), ~ str_trim(.x))) %>%
+  rename(taxon = OTU)
+
+# ------------------------------------------------------------------------------
+# 4. Combine per-ASV NSTI / closest-reference-genome dfs
+# ------------------------------------------------------------------------------
+
+nsti_list <- list(
+  crashed_barcode55 = nsti_crashed_barcode55_strat,
+  crashed_barcode67 = nsti_crashed_barcode67_strat,
+  crashed_barcode79 = nsti_crashed_barcode79_strat,
+  crashed_barcode91 = nsti_crashed_barcode91_strat,
+  crashed_barcode08 = nsti_crashed_barcode08_strat,
+  
+  healthy_barcode20 = nsti_healthy_barcode20_strat,
+  healthy_barcode32 = nsti_healthy_barcode32_strat,
+  healthy_barcode44 = nsti_healthy_barcode44_strat,
+  healthy_barcode56 = nsti_healthy_barcode56_strat,
+  healthy_barcode68 = nsti_healthy_barcode68_strat
+)
+
+closest_ref <- bind_rows(nsti_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("sample_group", "barcode"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  transmute(
+    sample_group = str_to_lower(sample_group),
+    barcode = str_trim(barcode),
+    taxon = str_trim(sequence),
+    closest_reference_genome_true = str_trim(closest_reference_genome),
+    metadata_NSTI = as.numeric(metadata_NSTI),
+    best_domain = best_domain
+  ) %>%
+  distinct()
+
+
+# ------------------------------------------------------------------------------
+# 5. Join taxonomy and closest-reference information at ASV level
+# ------------------------------------------------------------------------------
+
+kegg_tax <- kegg_all %>%
+  left_join(taxonomy_clean, by = "taxon") %>%
+  left_join(
+    closest_ref,
+    by = c("sample_group", "barcode", "taxon")
+  )
+
+# ------------------------------------------------------------------------------
+# 6. Read and clean closest-reference-MAG pathway completeness table
+# ------------------------------------------------------------------------------
+
+completeness <- read.csv(
+  "C:/Users/lasse/Desktop/wd/picrust2/floodgate/df/module_completeness.tsv",
+  header = TRUE,
+  sep = "\t"
+)
+
+id_map <- read.csv(
+  "C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/id_map.tsv",
+  header = TRUE,
+  sep = "\t"
+)
+
+
+id_map_clean <- id_map %>%
+  mutate(
+    original_filename_clean = str_remove(original_filename, "\\.fa$"),
+    new_id = str_trim(new_id)
+  )
+
+completeness_clean <- completeness %>%
+  filter(Module_id %in% kegg_modules_labels) %>%
+  mutate(
+    original_filename_clean = str_remove(Genome_name, "\\.fa$"),
+    module_label = str_squish(Module_id),
+    Percent_steps_found = as.numeric(Percent_steps_found)
+  ) %>%
+  select(
+    original_filename_clean,
+    module_label,
+    Percent_steps_found
+  )
+
+# ------------------------------------------------------------------------------
+# 7. Apply completeness filter at ASV level
+# ------------------------------------------------------------------------------
+
+kegg_tax_completeness_filtered <- kegg_tax %>%
+  mutate(
+    new_id = str_trim(closest_reference_genome_true),
+    module_label = str_squish(module_label)
+  ) %>%
+  left_join(
+    id_map_clean,
+    by = "new_id"
+  ) %>%
+  left_join(
+    completeness_clean,
+    by = c("original_filename_clean", "module_label")
+  ) %>%
+  mutate(
+    complete_module_in_closest_MAG = !is.na(Percent_steps_found) &
+      Percent_steps_found == 100,
+    
+    taxon_function_abun = if_else(
+      complete_module_in_closest_MAG,
+      taxon_function_abun,
+      0
+    ),
+    
+    taxon_rel_function_abun = if_else(
+      complete_module_in_closest_MAG,
+      taxon_rel_function_abun,
+      0
+    ),
+    
+    genome_function_count = if_else(
+      complete_module_in_closest_MAG,
+      genome_function_count,
+      0
+    )
+  )
+
+# If this column exists, zero it too
+if ("norm_taxon_function_contrib" %in% colnames(kegg_tax_completeness_filtered)) {
+  kegg_tax_completeness_filtered <- kegg_tax_completeness_filtered %>%
+    mutate(
+      norm_taxon_function_contrib = if_else(
+        !complete_module_in_closest_MAG,
+        0,
+        norm_taxon_function_contrib
+      )
+    )
+}
+
+# ------------------------------------------------------------------------------
+# 8. Collapse to species level
+# ------------------------------------------------------------------------------
+
+kegg_species_completeness_filtered <- kegg_tax_completeness_filtered %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    ),
+    Genus = if_else(
+      is.na(Genus) | Genus == "" | Genus == "g__",
+      "Unclassified_genus",
+      Genus
+    ),
+    Species = str_replace_all(Species, "^s__", ""),
+    Genus = str_replace_all(Genus, "^g__", ""),
+    Species = str_replace_all(Species, "_", " "),
+    Genus = str_replace_all(Genus, "_", " "),
+    Species = str_squish(Species),
+    Genus = str_squish(Genus),
+    Species = if_else(
+      str_detect(Species, "^midas s [0-9]+$"),
+      str_replace_all(Species, " ", "_"),
+      Species
+    )
+  ) %>%
+  group_by(
+    sample_group,
+    barcode,
+    sample,
+    function.,
+    module_label,
+    Genus,
+    Species
+  ) %>%
+  summarise(
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_rel_function_abun = sum(taxon_rel_function_abun, na.rm = TRUE),
+    
+    n_asvs = n_distinct(taxon),
+    
+    closest_reference_genomes = {
+      x <- sort(unique(na.omit(closest_reference_genome_true)))
+      if (length(x) == 0) NA_character_ else paste(x, collapse = "; ")
+    },
+    
+    n_closest_reference_genomes = n_distinct(
+      closest_reference_genome_true,
+      na.rm = TRUE
+    ),
+    
+    mean_NSTI = mean(metadata_NSTI, na.rm = TRUE),
+    median_NSTI = median(metadata_NSTI, na.rm = TRUE),
+    n_asvs_with_NSTI = sum(!is.na(metadata_NSTI)),
+    
+    n_asvs_with_complete_closest_MAG = sum(
+      complete_module_in_closest_MAG,
+      na.rm = TRUE
+    ),
+    
+    n_asvs_with_incomplete_closest_MAG = sum(
+      !complete_module_in_closest_MAG,
+      na.rm = TRUE
+    ),
+    
+    .groups = "drop"
+  ) %>%
+  mutate(
+    mean_NSTI = if_else(is.nan(mean_NSTI), NA_real_, mean_NSTI),
+    median_NSTI = if_else(is.nan(median_NSTI), NA_real_, median_NSTI)
+  ) %>%
+  group_by(sample_group, barcode, sample, function.) %>%
+  mutate(
+    rel_contribution = {
+      total <- sum(taxon_function_abun, na.rm = TRUE)
+      if (total > 0) taxon_function_abun / total else rep(0, n())
+    },
+    percent_contribution = 100 * rel_contribution
+  ) %>%
+  ungroup()
+
+
+kegg_species_completeness_filtered <- kegg_species_completeness_filtered %>%
+  left_join(
+    metadata %>%
+      select(Barcode, SampleDate, Day),
+    by = c("sample" = "Barcode")
+  ) %>%
+  mutate(SampleDate = as.Date(SampleDate))
+
+pathway_ts_filtered <- kegg_species_completeness_filtered %>%
+  group_by(sample_group, sample, Day, SampleDate, function., module_label) %>%
+  summarise(
+    abundance = sum(taxon_function_abun, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+```
+
+
+
+
+
+pathway dominance plot
+```{r}
+
+# ------------------------------------------------------------------------------
+# 1. Define pathway groups
+# ------------------------------------------------------------------------------
+
+group_methanogenesis <- c(
+  "CUS00151", "CUS00152", "CUS00153", "CUS00154", "CUS00155"
+)
+
+group_VFA_deg <- c(
+  "CUS00142", "CUS00143", "CUS00144", "CUS00145", "CUS00146"
+)
+
+group_acidogenesis <- c(
+  "CUS00125", "CUS00126", "CUS00127", "CUS00128", "CUS00129",
+  "CUS00133", "CUS00135", "CUS00136", "CUS00137", "CUS00141"
+)
+
+pathway_groups <- tibble(
+  function. = c(group_methanogenesis, group_VFA_deg, group_acidogenesis),
+  pathway_group = c(
+    rep("Methanogenesis", length(group_methanogenesis)),
+    rep("VFA degradation", length(group_VFA_deg)),
+    rep("Acidogenesis", length(group_acidogenesis))
+  )
+)
+
+# ------------------------------------------------------------------------------
+# 2. Add pathway group information
+# ------------------------------------------------------------------------------
+
+plot_df <- pathway_ts_filtered %>%
+  left_join(pathway_groups, by = "function.") %>%
+  filter(!is.na(pathway_group)) %>%
+  mutate(
+    sample_group = str_to_title(sample_group),
+    pathway_group = factor(
+      pathway_group,
+      levels = c("Methanogenesis", "VFA degradation", "Acidogenesis")
+    )
+  )
+
+# ------------------------------------------------------------------------------
+# 3. Simple line plots: one plot per pathway group, faceted by sample group
+# ------------------------------------------------------------------------------
+
+plot_one_pathway_group <- function(group_name) {
+  plot_df %>%
+    filter(pathway_group == group_name) %>%
+    ggplot(aes(x = Day, y = abundance, colour = module_label, group = module_label)) +
+    geom_line(linewidth = 1) +
+    geom_point(size = 2) +
+    
+    facet_wrap(~ sample_group) +
+    
+    scale_y_continuous(
+  trans = scales::pseudo_log_trans(base = 10),
+  limits = c(0, 15000),
+  breaks = c(0, 100, 500, 1000, 2500, 10000),
+  labels = scales::comma
+) +
+    
+    theme_bw() +
+    labs(
+      x = "Day",
+      y = "Predicted pathway abundance",
+      colour = "Pathway",
+    ) +
+    theme(
+      strip.text = element_text(face = "bold", size = 17),
+      legend.position = "right",
+      axis.text.x = element_text(angle = 35, hjust = 1, size = 17),
+    axis.text.y = element_text(size = 16),
+    axis.title = element_text(size = 19),
+    legend.title = element_text(face = "bold", size = 18),
+    legend.text = element_text(size = 17),
+    )
+}
+
+p_methanogenesis <- plot_one_pathway_group("Methanogenesis")
+p_VFA_deg        <- plot_one_pathway_group("VFA degradation")
+p_acidogenesis   <- plot_one_pathway_group("Acidogenesis")
+
+ggsave("plots/new/methanogenesis_pathway_abundance.png", p_methanogenesis, width = 10.67, height = 5, dpi = 300)
+ggsave("plots/new/vfa_degradation_pathway_abundance.png", p_VFA_deg, width = 12, height = 5, dpi = 300)
+ggsave("plots/new/acidogenesis_pathway_abundance.png", p_acidogenesis, width = 18, height = 6, dpi = 300)
+
+
+```
