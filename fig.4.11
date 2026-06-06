@@ -1,0 +1,1432 @@
+---
+title: "my_samples"
+author: "Lasse Steffensen"
+date: "2026-05-02"
+output: html_document
+---
+
+
+```{r}
+
+setwd("C:/Users/lasse/Desktop/wd/picrust2/my_samples")
+
+library(tidyverse)
+library(lubridate)
+library(patchwork)
+
+
+
+# metadapatchwork# metadata file
+metadata <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/metadata.txt", header = TRUE, sep = "\t")
+
+# otutable
+otutable <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_mappedreads.tsv", header = TRUE, sep = "\t")
+
+taxonomy <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_mappedreads.tsv", header = TRUE, sep = "\t") %>% 
+  select(OTU, Kingdom, Phylum, Class, Order, Family, Genus, Species)
+
+barcodes = metadata$barcode
+
+otutable_norm <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_normalised.tsv", header = TRUE, sep = "\t") %>% 
+  select(OTU, FBE62336_barcode04, FBE62336_barcode16)
+
+custom_modules_map <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom_module_names.tsv", header = TRUE, sep = "\t")
+
+
+otutable_norm <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/FBE62336_otutable_normalised.tsv", header = TRUE, sep = "\t")
+
+species_abun <- otutable_norm %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    )
+  ) %>%
+  group_by(Species) %>%
+  summarise(
+    across(all_of(barcodes), ~ sum(.x, na.rm = TRUE)),
+    .groups = "drop"
+  )
+
+
+```
+
+
+................................................................................
+                                      dfs
+................................................................................
+
+NSTI dfs
+```{r}
+
+# Weighed NSTI files
+weighted_nsti_reference <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/reference/weighted_nsti.tsv", header = TRUE, sep = "\t")
+
+
+weighted_nsti_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+weighted_nsti_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+weighted_nsti_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+weighted_nsti_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/weighted_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+
+# Combine weighted NSTI values
+
+weighted_nsti_all <- bind_rows(
+  weighted_nsti_standard_meso   %>% mutate(database = "PICRUSt2-SC",  group = "Mesophilic"),
+
+  weighted_nsti_standard_thermo %>% mutate(database = "PICRUSt2-SC",  group = "Thermophilic"),
+
+  weighted_nsti_custom_meso     %>% mutate(database = "MiDAS DB",    group = "Mesophilic"),
+
+  weighted_nsti_custom_thermo   %>% mutate(database = "MiDAS DB",    group = "Thermophilic"),
+
+  weighted_nsti_reference         %>% mutate(database = "PICRUSt2-SC", group = "Human gut")
+) %>%
+  mutate(
+    plot_group = paste(group, database, sep = " | "),
+    plot_group = factor(
+      plot_group,
+      levels = c(
+        "Mesophilic | PICRUSt2-SC",
+        "Mesophilic | MiDAS DB",
+        "Thermophilic | PICRUSt2-SC",
+        "Thermophilic | MiDAS DB",
+        "Human gut | PICRUSt2-SC"
+      )
+    )
+  )
+
+
+
+
+
+
+
+id_map <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/id_map.tsv", header = TRUE, sep = "\t")
+
+id_map <- id_map %>%
+  mutate(
+    original_filename = str_replace(original_filename, "^ZBC", "BC")
+  ) %>%
+  rename("closest_reference_genome" = "new_id") %>%
+  rename("Genome_name" = "original_filename")
+
+# Raw NSTI files
+
+nsti_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+nsti_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t")
+
+
+nsti_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
+  left_join(id_map, by = ("closest_reference_genome"))
+
+
+nsti_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/combined_marker_predicted_and_nsti.tsv.gz", header = TRUE, sep = "\t") %>%
+  left_join(id_map, by = ("closest_reference_genome"))
+
+
+
+nsti_reference <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/gut_data/combined_marker_predicted_and_nsti.tsv", header = TRUE, sep = "\t")
+
+
+
+# ------------------------------------------------------------------------------
+# 1. Combine stratified NSTI values
+# ------------------------------------------------------------------------------
+
+nsti_all <- bind_rows(
+  nsti_standard_meso   %>% mutate(database = "PICRUSt2-SC", group = "Mesophilic"),
+
+  nsti_standard_thermo %>% mutate(database = "PICRUSt2-SC", group = "Thermophilic"),
+
+  nsti_custom_meso     %>% mutate(database = "MiDAS DB", group = "Mesophilic"),
+
+  nsti_custom_thermo   %>% mutate(database = "MiDAS DB", group = "Thermophilic"),
+) %>%
+  mutate(
+    plot_group = paste(group, database, sep = " | "),
+    plot_group = factor(
+      plot_group,
+      levels = c(
+        "Mesophilic | PICRUSt2-SC",
+        "Mesophilic | MiDAS DB",
+        "Thermophilic | PICRUSt2-SC",
+        "Thermophilic | MiDAS DB"
+      )
+    )
+  )
+
+# ------------------------------------------------------------------------------
+# 2. Summary dataframe for stratified NSTI values
+# ------------------------------------------------------------------------------
+
+nsti_summary <- nsti_all %>%
+  group_by(plot_group, database, group) %>%
+  summarise(
+    mean_NSTI = mean(metadata_NSTI, na.rm = TRUE),
+    median_NSTI = median(metadata_NSTI, na.rm = TRUE),
+    sd_NSTI = sd(metadata_NSTI, na.rm = TRUE),
+    min_NSTI = min(metadata_NSTI, na.rm = TRUE),
+    max_NSTI = max(metadata_NSTI, na.rm = TRUE),
+    n_OTUs = n(),
+    .groups = "drop"
+  )
+
+
+```
+
+KEGG modulule dfs + collapse to species level
+```{r}
+
+kegg_modules <- c("M00357", "M00567", "M00356", "M00563")
+kegg_modules_labels <- c("Methanogenesis, acetate => methane", "Methanogenesis, CO2 => methane", "Methanogenesis, methanol => methane", "Methanogenesis, methylamine/dimethylamine/trimethylamine => methane")
+
+
+kegg_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+
+
+# collapse to species level
+
+
+
+# 1. KEGG module metadata
+# ------------------------------------------------------------------------------
+
+kegg_module_df <- tibble(
+  function. = kegg_modules,
+  module_label = kegg_modules_labels
+)
+
+
+# 2. Clean taxonomy
+# ------------------------------------------------------------------------------
+
+taxonomy_clean <- taxonomy %>%
+  mutate(across(everything(), ~ str_trim(.x))) %>%
+  rename(taxon = OTU)
+
+
+# 3. Combine all stratified KEGG module contribution dfs
+# ------------------------------------------------------------------------------
+
+kegg_list <- list(
+  custom_meso     = kegg_custom_meso,
+  custom_thermo   = kegg_custom_thermo,
+  standard_meso   = kegg_standard_meso,
+  standard_thermo = kegg_standard_thermo
+)
+
+kegg_all <- bind_rows(kegg_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature", "replicate"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  left_join(kegg_module_df, by = "function.")
+
+
+# 4. Join taxonomy
+# ------------------------------------------------------------------------------
+
+kegg_tax <- kegg_all %>%
+  left_join(taxonomy_clean, by = "taxon")
+
+
+# 5. Collapse to species level
+# ------------------------------------------------------------------------------
+
+kegg_species <- kegg_tax %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    )
+  ) %>%
+  group_by(
+    database,
+    temperature,
+    replicate,
+    sample,
+    function.,
+    module_label,
+    Species
+  ) %>%
+  summarise(
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_rel_function_abun = sum(taxon_rel_function_abun, na.rm = TRUE),
+    n_asvs = n_distinct(taxon),
+    .groups = "drop"
+  ) %>%
+  group_by(database, temperature, replicate, sample, function.) %>%
+  mutate(
+    rel_contribution = taxon_function_abun / sum(taxon_function_abun, na.rm = TRUE),
+    percent_contribution = 100 * rel_contribution
+  ) %>%
+  ungroup()
+
+
+
+
+```
+
+
+
+KEGG CUSTOM module STRATIFIED dfs + collapse to species level
+```{r}
+
+
+kegg_modules <- c("CUS00151", #5
+                  "CUS00152", #6
+                  "CUS00153", #7
+                  "CUS00154", #8
+                  "CUS00155", #9
+                  "CUS00039", #10
+                  "CUS00041", #11
+                  "CUS00049", #12
+                  "CUS00052", #13
+                  "CUS00064", #14
+                  "CUS00065", #15
+                  "CUS00066", #16
+                  "CUS00067", #17
+                  "CUS00068", #18
+                  "CUS00069", #19
+                  "CUS00125", #20
+                  "CUS00126", #21
+                  "CUS00127", #22
+                  "CUS00128", #23
+                  "CUS00129", #24
+                  "CUS00133", #25
+                  "CUS00135", #26
+                  "CUS00136", #27
+                  "CUS00137", #28
+                  "CUS00141", #29
+                  "CUS00142", #30
+                  "CUS00143", #31
+                  "CUS00144", #32
+                  "CUS00145", #33
+                  "CUS00146", #34
+                  "M00579") #35
+                  
+                  
+                  
+kegg_modules_labels <- c("Methanogenesis I, acetate => methane", #5
+                         "Methanogenesis II, CO2 => methane", #6
+                         "Methanogenesis III, methanol => methane", #7
+                         "Methanogenesis IV, methylamine => methane", #8
+                         "Methanogenesis V, methanethiol => methane", #9
+                         "Isoleucine degradation II, isoleucine => 2-methylbutyrate", #10
+                         "Leucine degradation II, leucine => 3-methylbutyrate", #11
+                         "Methionine degradation II, L-methionine => 2-oxobutanoate", #12
+                         "Proline degradation II, L-proline => 5-aminovalerate", #13
+                         "Valine degradation II, L-valine => 2-methylpropanoate", #14
+                         "Glycerol degradation I, glycerol => sn-glycerol 3-phosphate => glycerone-P", #15
+                         "Glycerol degradation II, glycerol => dihydroxyacetone => glycerone-P", #16
+                         "Glycerol degradation III, glycerol => 1,3-Propanediol", #17
+                         "Long chain fatty acid beta-oxidation, LFCAs => Acetyl-CoA", #18
+                         "Triacylglycerol degradation, triacylglycerol => glycerol + fatty acid", #19
+                         "Acetyl-CoA fermentation to acetate, acetyl-CoA => acetate", #20
+                         "Acetyl-CoA fermentation to acetate, acetyl-CoA => acetate and formate", #21
+                         "Acetyl-CoA fermentation to succinate and acetate", #22
+                         "Pyruvate fermentation to acetate and lactate", #23
+                         "Pyruvate fermentation to lactate", #24
+                         "Lactate degradation lactate => propionate", #25
+                         "Acetyl CoA fermentation to butanoate I", #26
+                         "Acetyl CoA fermentation to butanoate II", #27
+                         "Succinate fermentation to butanoate", #28
+                         "Methylmalonyl CoA pathway from succinyl-CoA to propanoate", #29
+                         "Reductive acetyl CoA pathway (Wood-Ljungdahl pathway)", #30
+                         "Syntrophic butyrate degradation butyrate => acetyl-CoA", #31
+                         "Syntrophic propionate degradation propionate => acetate", #32
+                         "Reversed WL pathway acetate => CO2", #33
+                         "WLP-GCS pathway acetate => CO2", #34
+                         "Pectin degradation") #35
+
+
+
+
+kegg2_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg2_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg2_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg2_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+
+
+# collapse to species level
+
+
+
+# 1. KEGG module metadata
+# ------------------------------------------------------------------------------
+
+kegg_module_df <- tibble(
+  function. = kegg_modules,
+  module_label = kegg_modules_labels
+)
+
+
+# 2. Clean taxonomy
+# ------------------------------------------------------------------------------
+
+taxonomy_clean <- taxonomy %>%
+  mutate(across(everything(), ~ str_trim(.x))) %>%
+  rename(taxon = OTU)
+
+
+# 3. Combine all stratified KEGG module contribution dfs
+# ------------------------------------------------------------------------------
+
+kegg_list <- list(
+  custom_meso     = kegg2_custom_meso,
+  custom_thermo   = kegg2_custom_thermo,
+  standard_meso   = kegg2_standard_meso,
+  standard_thermo = kegg2_standard_thermo
+)
+
+kegg_all <- bind_rows(kegg_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature", "replicate"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  left_join(kegg_module_df, by = "function.")
+
+
+# 4. Join taxonomy
+# ------------------------------------------------------------------------------
+
+kegg_tax <- kegg_all %>%
+  left_join(taxonomy_clean, by = "taxon")
+
+
+# 5. Collapse to species level
+# ------------------------------------------------------------------------------
+
+kegg_species <- kegg_tax %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    ),
+    Genus = if_else(
+      is.na(Genus) | Genus == "" | Genus == "g__",
+      "Unclassified_genus",
+      Genus
+    ),
+    # clean labels
+    Species = str_replace_all(Species, "^s__", ""),
+    Genus = str_replace_all(Genus, "^g__", ""),
+    Species = str_replace_all(Species, "_", " "),
+    Genus = str_replace_all(Genus, "_", " ")
+  ) %>%
+  group_by(
+    database,
+    temperature,
+    replicate,
+    sample,
+    function.,
+    module_label,
+    Genus,
+    Species
+  ) %>%
+  summarise(
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_rel_function_abun = sum(taxon_rel_function_abun, na.rm = TRUE),
+    n_asvs = n_distinct(taxon),
+    .groups = "drop"
+  ) %>%
+  group_by(database, temperature, replicate, sample, function.) %>%
+  mutate(
+    rel_contribution = taxon_function_abun / sum(taxon_function_abun, na.rm = TRUE),
+    percent_contribution = 100 * rel_contribution
+  ) %>%
+  ungroup()
+
+
+
+```
+
+kegg CUSTOM dfs UNSTRATIFIED
+```{r}
+
+
+kegg2_custom_meso_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(pathway %in% kegg_modules)
+
+
+kegg2_custom_thermo_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(pathway %in% kegg_modules)
+
+
+kegg2_standard_meso_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(pathway %in% kegg_modules)
+
+
+kegg2_standard_thermo_unstrat <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_unstrat.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(pathway %in% kegg_modules)
+
+
+
+
+# collapse to species level
+
+
+
+# 1. KEGG module metadata
+# ------------------------------------------------------------------------------
+
+kegg_module_df <- tibble(
+  function. = kegg_modules,
+  module_label = kegg_modules_labels
+)
+
+
+
+# 3. Combine all stratified KEGG module contribution dfs
+# ------------------------------------------------------------------------------
+
+kegg_list_unstrat <- list(
+  custom_meso    = kegg2_custom_meso_unstrat,
+  custom_thermo   = kegg2_custom_thermo_unstrat,
+  standard_meso   = kegg2_standard_meso_unstrat,
+  standard_thermo = kegg2_standard_thermo_unstrat
+)
+
+kegg2_all_unstrat <- bind_rows(kegg_list_unstrat, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature", "replicate"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  left_join(
+    kegg_module_df %>%
+      rename(pathway = function.),
+    by = "pathway"
+  ) %>%
+  mutate(
+    database = str_to_title(database),
+    temperature = recode(
+      temperature,
+      meso = "Mesophilic",
+      thermo = "Thermophilic"
+    )
+  )
+
+
+```
+
+
+................................................................................
+                        Filtering for module completeness
+................................................................................
+
+NEW STRAT KEGG ABUNDANCES (FILTERED FOR COMPLETENESS)
+```{r}
+
+# ------------------------------------------------------------------------------
+# 1. KEGG modules
+# ------------------------------------------------------------------------------
+
+kegg_modules <- c(
+  "CUS00151", "CUS00152", "CUS00153", "CUS00154", "CUS00155",
+  "CUS00039", "CUS00041", "CUS00049", "CUS00052", "CUS00064",
+  "CUS00065", "CUS00066", "CUS00067", "CUS00068", "CUS00069",
+  "CUS00125", "CUS00126", "CUS00127", "CUS00128", "CUS00129",
+  "CUS00133", "CUS00135", "CUS00136", "CUS00137", "CUS00141",
+  "CUS00142", "CUS00143", "CUS00144", "CUS00145", "CUS00146"
+)
+
+kegg_modules_labels <- c(
+  "Methanogenesis I, acetate => methane",
+  "Methanogenesis II, CO2 => methane",
+  "Methanogenesis III, methanol => methane",
+  "Methanogenesis IV, methylamine => methane",
+  "Methanogenesis V, methanethiol => methane",
+  "Isoleucine degradation II, isoleucine => 2-methylbutyrate",
+  "Leucine degradation II, leucine => 3-methylbutyrate",
+  "Methionine degradation II, L-methionine => 2-oxobutanoate",
+  "Proline degradation II, L-proline => 5-aminovalerate",
+  "Valine degradation II, L-valine => 2-methylpropanoate",
+  "Glycerol degradation I, glycerol => sn-glycerol 3-phosphate => glycerone-P",
+  "Glycerol degradation II, glycerol => dihydroxyacetone => glycerone-P",
+  "Glycerol degradation III, glycerol => 1,3-Propanediol",
+  "Long chain fatty acid beta-oxidation, LFCAs => Acetyl-CoA",
+  "Triacylglycerol degradation, triacylglycerol => glycerol + fatty acid",
+  "Acetyl-CoA fermentation to acetate, acetyl-CoA => acetate",
+  "Acetyl-CoA fermentation to acetate, acetyl-CoA => acetate and formate",
+  "Acetyl-CoA fermentation to succinate and acetate",
+  "Pyruvate fermentation to acetate and lactate",
+  "Pyruvate fermentation to lactate",
+  "Lactate degradation lactate => propionate",
+  "Acetyl-CoA fermentation to butanoate I",
+  "Acetyl-CoA fermentation to butanoate II",
+  "Succinate fermentation to butanoate",
+  "Methylmalonyl-CoA pathway (from succinyl-CoA to propanoate)",
+  "Reductive acetyl-CoA pathway (Wood-Ljungdahl pathway)",
+  "Syntrophic butyrate degradation, butyrate => acetyl-CoA",
+  "Syntrophic propionate degradation, propionate => acetate",
+  "Reversed WL pathway acetate => CO2",
+  "WLP-GCS pathway acetate => CO2"
+)
+
+kegg_module_df <- tibble(
+  function. = kegg_modules,
+  module_label = kegg_modules_labels
+)
+
+# ------------------------------------------------------------------------------
+# 2. Read stratified KEGG contribution files
+# ------------------------------------------------------------------------------
+
+
+kegg2_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg2_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg2_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+
+kegg2_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/kegg2/path_abun_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% kegg_modules)
+
+# ------------------------------------------------------------------------------
+# 3. Combine KEGG contribution files
+# ------------------------------------------------------------------------------
+
+kegg_list <- list(
+  custom_meso     = kegg2_custom_meso,
+  custom_thermo   = kegg2_custom_thermo,
+  standard_meso   = kegg2_standard_meso,
+  standard_thermo = kegg2_standard_thermo
+)
+
+kegg_all <- bind_rows(kegg_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  mutate(
+    database = str_to_lower(database),
+    temperature = str_to_lower(temperature),
+    taxon = str_trim(taxon)
+  ) %>%
+  left_join(kegg_module_df, by = "function.")
+
+# ------------------------------------------------------------------------------
+# 4. Clean taxonomy
+# ------------------------------------------------------------------------------
+
+taxonomy_clean <- taxonomy %>%
+  mutate(across(everything(), ~ str_trim(.x))) %>%
+  rename(taxon = OTU)
+
+# ------------------------------------------------------------------------------
+# 5. Combine custom NSTI dfs and retain true closest reference genome name
+# ------------------------------------------------------------------------------
+
+nsti_custom_list <- list(
+  custom_meso   = nsti_custom_meso,
+  custom_thermo = nsti_custom_thermo
+)
+
+custom_closest_ref <- bind_rows(nsti_custom_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  transmute(
+    database = str_to_lower(database),
+    temperature = str_to_lower(temperature),
+    taxon = str_trim(sequence),
+    closest_reference_genome_true = str_trim(Genome_name),
+    metadata_NSTI = as.numeric(metadata_NSTI)
+  ) %>%
+  distinct(
+    database,
+    temperature,
+    taxon,
+    closest_reference_genome_true,
+    metadata_NSTI
+  )
+
+# ------------------------------------------------------------------------------
+# 6. Join taxonomy and closest-reference-genome information at ASV level
+# ------------------------------------------------------------------------------
+
+kegg_tax <- kegg_all %>%
+  left_join(taxonomy_clean, by = "taxon") %>%
+  left_join(
+    custom_closest_ref,
+    by = c("database", "temperature", "taxon")
+  )
+
+# ------------------------------------------------------------------------------
+# 1. Clean EnrichM completeness table
+# ------------------------------------------------------------------------------
+
+completeness <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/floodgate/df/module_completeness.tsv", header = TRUE, sep = "\t")
+
+completeness_f <- completeness %>%
+  filter(Module_id %in% kegg_modules_labels)
+
+completeness_clean <- completeness_f %>%
+  mutate(
+    Genome_name_clean = str_remove(Genome_name, "\\.fa$"),
+    Module_id = str_squish(Module_id)
+  ) %>%
+  select(
+    Genome_name_clean,
+    module_label = Module_id,
+    Percent_steps_found
+  )
+
+# ------------------------------------------------------------------------------
+# 2. Apply completeness filter at ASV level
+# ------------------------------------------------------------------------------
+
+kegg_tax_completeness_filtered <- kegg_tax %>%
+  mutate(
+    database = str_to_lower(database),
+    temperature = str_to_lower(temperature),
+    Genome_name_clean = str_remove(closest_reference_genome_true, "\\.fa$"),
+    module_label = str_squish(module_label)
+  ) %>%
+  left_join(
+    completeness_clean,
+    by = c(
+      "Genome_name_clean",
+      "module_label"
+    )
+  ) %>%
+  mutate(
+    complete_module_in_closest_MAG = Percent_steps_found == 100,
+    
+    # conservative: custom rows with missing completeness are treated as incomplete
+    complete_module_in_closest_MAG = if_else(
+      database == "custom" & is.na(complete_module_in_closest_MAG),
+      FALSE,
+      complete_module_in_closest_MAG
+    ),
+    
+    taxon_function_abun = if_else(
+      database == "custom" & !complete_module_in_closest_MAG,
+      0,
+      taxon_function_abun
+    ),
+    
+    taxon_rel_function_abun = if_else(
+      database == "custom" & !complete_module_in_closest_MAG,
+      0,
+      taxon_rel_function_abun
+    ),
+    
+    genome_function_count = if_else(
+      database == "custom" & !complete_module_in_closest_MAG,
+      0,
+      genome_function_count
+    )
+  )
+
+# If this column exists in your table, zero it too
+if ("norm_taxon_function_contrib" %in% colnames(kegg_tax_completeness_filtered)) {
+  kegg_tax_completeness_filtered <- kegg_tax_completeness_filtered %>%
+    mutate(
+      norm_taxon_function_contrib = if_else(
+        database == "custom" & !complete_module_in_closest_MAG,
+        0,
+        norm_taxon_function_contrib
+      )
+    )
+}
+
+# ------------------------------------------------------------------------------
+# 3. Re-collapse to species level
+# ------------------------------------------------------------------------------
+
+kegg_species_completeness_filtered <- kegg_tax_completeness_filtered %>%
+  mutate(
+    Species = if_else(
+      is.na(Species) | Species == "" | Species == "s__",
+      "Unclassified_species",
+      Species
+    ),
+    Genus = if_else(
+      is.na(Genus) | Genus == "" | Genus == "g__",
+      "Unclassified_genus",
+      Genus
+    ),
+    Species = str_replace_all(Species, "^s__", ""),
+    Genus = str_replace_all(Genus, "^g__", ""),
+    Species = str_replace_all(Species, "_", " "),
+    Genus = str_replace_all(Genus, "_", " "),
+    Species = str_squish(Species),
+    Genus = str_squish(Genus),
+    Species = if_else(
+      str_detect(Species, "^midas s [0-9]+$"),
+      str_replace_all(Species, " ", "_"),
+      Species
+    )
+  ) %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    module_label,
+    Genus,
+    Species
+  ) %>%
+  summarise(
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_rel_function_abun = sum(taxon_rel_function_abun, na.rm = TRUE),
+    
+    n_asvs = n_distinct(taxon),
+    
+    closest_reference_genomes = {
+      x <- sort(unique(na.omit(closest_reference_genome_true)))
+      if (length(x) == 0) NA_character_ else paste(x, collapse = "; ")
+    },
+    
+    n_closest_reference_genomes = n_distinct(
+      closest_reference_genome_true,
+      na.rm = TRUE
+    ),
+    
+    mean_NSTI = mean(metadata_NSTI, na.rm = TRUE),
+    median_NSTI = median(metadata_NSTI, na.rm = TRUE),
+    n_asvs_with_NSTI = sum(!is.na(metadata_NSTI)),
+    
+    n_asvs_with_complete_closest_MAG = sum(
+      database == "custom" & complete_module_in_closest_MAG,
+      na.rm = TRUE
+    ),
+    
+    n_asvs_with_incomplete_closest_MAG = sum(
+      database == "custom" & !complete_module_in_closest_MAG,
+      na.rm = TRUE
+    ),
+    
+    .groups = "drop"
+  ) %>%
+  mutate(
+    mean_NSTI = if_else(is.nan(mean_NSTI), NA_real_, mean_NSTI),
+    median_NSTI = if_else(is.nan(median_NSTI), NA_real_, median_NSTI)
+  ) %>%
+  group_by(database, temperature, sample, function.) %>%
+  mutate(
+    rel_contribution = {
+      total <- sum(taxon_function_abun, na.rm = TRUE)
+      if (total > 0) taxon_function_abun / total else rep(0, n())
+    },
+    percent_contribution = 100 * rel_contribution
+  ) %>%
+  ungroup()
+
+
+
+
+
+```
+
+................................................................................
+                                PECTIN DEGRADATION
+................................................................................
+
+
+dfs
+```{r}
+
+gene_list <- read.csv(
+  "C:/Users/lasse/Desktop/wd/25/df/26/pectin_deg_genes.tsv",
+  header = TRUE, sep = "\t"
+)
+
+ec_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+
+
+
+
+
+```
+
+Species contribution
+```{r}
+
+
+
+# ------------------------------------------------------------------------------
+# Species contribution
+# ------------------------------------------------------------------------------
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(forcats)
+library(ggplot2)
+library(purrr)
+
+# ------------------------------------------------------------------------------
+# 1. Settings
+# ------------------------------------------------------------------------------
+
+top_n_species <- 5
+
+out_base <- "plots_one/ec_plots"
+dir.create(out_base, recursive = TRUE, showWarnings = FALSE)
+
+target_ecs <- unique(gene_list$EC)
+
+sample_group_levels <- c(
+  "Mesophilic | PICRUSt2-SC",
+  "Mesophilic | MiDAS DB",
+  "Thermophilic | PICRUSt2-SC",
+  "Thermophilic | MiDAS DB"
+)
+
+# ------------------------------------------------------------------------------
+# 2. Combine only the second time point dfs
+# ------------------------------------------------------------------------------
+
+ec_list_t2 <- list(
+  custom_meso     = ec_custom_meso,
+  custom_thermo   = ec_custom_thermo,
+  standard_meso   = ec_standard_meso,
+  standard_thermo = ec_standard_thermo
+)
+
+ec_all_t2 <- bind_rows(ec_list_t2, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  filter(function. %in% target_ecs) %>%
+  mutate(
+    database = str_to_lower(database),
+    temperature = str_to_lower(temperature),
+    taxon = str_trim(taxon)
+  )
+
+# ------------------------------------------------------------------------------
+# 3. Add EC labels and taxonomy
+# ------------------------------------------------------------------------------
+
+ec_label_df <- gene_list %>%
+  distinct(EC, enzyme) %>%
+  rename(
+    function. = EC,
+    ec_label = enzyme
+  )
+
+taxonomy_clean <- taxonomy %>%
+  mutate(across(everything(), ~ str_trim(.x))) %>%
+  rename(taxon = OTU)
+
+ec_species <- ec_all_t2 %>%
+  left_join(ec_label_df, by = "function.") %>%
+  left_join(taxonomy_clean, by = "taxon") %>%
+  mutate(
+    Species_clean = Species,
+    Species_clean = if_else(
+      is.na(Species_clean) | Species_clean == "" | Species_clean == "s__",
+      "Unclassified_species",
+      Species_clean
+    ),
+    Species_clean = str_replace_all(Species_clean, "^s__", ""),
+    Species_clean = str_squish(Species_clean),
+    
+    Phylum_clean = Phylum,
+    Phylum_clean = if_else(
+      is.na(Phylum_clean) | Phylum_clean == "" | Phylum_clean == "p__",
+      "unclassified_phylum",
+      Phylum_clean
+    ),
+    Phylum_clean = str_replace_all(Phylum_clean, "^p__", ""),
+    Phylum_clean = str_squish(Phylum_clean),
+    
+    Family_clean = Family,
+    Family_clean = if_else(
+      is.na(Family_clean) | Family_clean == "" | Family_clean == "f__",
+      "unclassified_family",
+      Family_clean
+    ),
+    Family_clean = str_replace_all(Family_clean, "^f__", ""),
+    Family_clean = str_squish(Family_clean),
+    
+    Species_legend = paste0(
+  "<i>",
+  Species_clean,
+  "</i> (",
+  Phylum_clean,
+  "; ",
+  Family_clean,
+  ")"
+)
+  )
+
+# ------------------------------------------------------------------------------
+# 4. Collapse to species level
+# ------------------------------------------------------------------------------
+
+ec_species_collapsed <- ec_species %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    ec_label,
+    Phylum_clean,
+    Family_clean,
+    Genus,
+    Species_clean,
+    Species_legend
+  ) %>%
+  summarise(
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    taxon_abun = sum(taxon_abun, na.rm = TRUE),
+    taxon_rel_abun = sum(taxon_rel_abun, na.rm = TRUE),
+    n_asvs = n_distinct(taxon),
+    .groups = "drop"
+  )
+
+# ------------------------------------------------------------------------------
+# 5. Select top 5 contributing species per EC x sample group
+# ------------------------------------------------------------------------------
+
+top5_ec_species <- ec_species_collapsed %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    ec_label
+  ) %>%
+  mutate(
+    percent_contribution = {
+      total <- sum(taxon_function_abun, na.rm = TRUE)
+      if (total > 0) 100 * taxon_function_abun / total else rep(0, n())
+    }
+  ) %>%
+  slice_max(
+    order_by = taxon_function_abun,
+    n = top_n_species,
+    with_ties = FALSE
+  ) %>%
+  ungroup()
+
+write.csv(
+  top5_ec_species,
+  file = file.path(out_base, "top5_species_EC_contribution_timepoint2.csv"),
+  row.names = FALSE
+)
+
+# ------------------------------------------------------------------------------
+# 6. Prepare plotting df: top 5 species + Other
+# ------------------------------------------------------------------------------
+
+top_species_lookup <- top5_ec_species %>%
+  mutate(is_top_species = TRUE) %>%
+  select(
+    database,
+    temperature,
+    sample,
+    function.,
+    Species_clean,
+    Species_legend,
+    is_top_species
+  )
+
+plot_df <- ec_species_collapsed %>%
+  left_join(
+    top_species_lookup,
+    by = c(
+      "database",
+      "temperature",
+      "sample",
+      "function.",
+      "Species_clean",
+      "Species_legend"
+    )
+  ) %>%
+  mutate(
+    Species_plot = if_else(is.na(is_top_species), "Other", Species_legend)
+  ) %>%
+  group_by(
+    database,
+    temperature,
+    sample,
+    function.,
+    ec_label,
+    Species_plot
+  ) %>%
+  summarise(
+    taxon_function_abun = sum(taxon_function_abun, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  group_by(database, temperature, sample, function., ec_label) %>%
+  mutate(
+    percent_contribution = {
+      total <- sum(taxon_function_abun, na.rm = TRUE)
+      if (total > 0) 100 * taxon_function_abun / total else rep(0, n())
+    }
+  ) %>%
+  ungroup() %>%
+  mutate(
+    sample_group = paste(
+      recode(
+        temperature,
+        meso = "Mesophilic",
+        thermo = "Thermophilic"
+      ),
+      recode(
+        database,
+        standard = "PICRUSt2-SC",
+        custom = "MiDAS DB"
+      ),
+      sep = " | "
+    ),
+    sample_group = factor(
+      sample_group,
+      levels = sample_group_levels
+    ),
+    Species_plot = fct_relevel(Species_plot, "Other", after = Inf)
+  )
+
+# ------------------------------------------------------------------------------
+# 7. Make one stacked barplot per EC
+# ------------------------------------------------------------------------------
+
+make_ec_species_plot <- function(ec_id) {
+  
+  df_ec <- plot_df %>%
+    filter(function. == ec_id)
+  
+  bar_outline_df <- tibble(
+    sample_group = factor(
+      sample_group_levels,
+      levels = sample_group_levels
+    ),
+    percent_contribution = 100
+  )
+  
+  p <- ggplot(
+    df_ec,
+    aes(
+      x = sample_group,
+      y = percent_contribution,
+      fill = Species_plot
+    )
+  ) +
+    geom_col(
+      data = bar_outline_df,
+      aes(
+        x = sample_group,
+        y = percent_contribution
+      ),
+      inherit.aes = FALSE,
+      width = 0.75,
+      fill = NA,
+      colour = "grey25",
+      linewidth = 0.15
+    ) +
+    geom_col(width = 0.75, colour = "grey25", linewidth = 0.15) +
+    scale_x_discrete(drop = FALSE) +
+    scale_y_continuous(
+      limits = c(0, 100),
+      expand = expansion(mult = c(0, 0.02))
+    ) +
+    theme_bw(base_size = 12) +
+    labs(
+      x = NULL,
+      y = "Contribution to EC abundance (%)",
+      fill = "Species"
+    ) +
+    theme(
+      axis.text.x = element_text(angle = 35, hjust = 1, size = 20),
+      axis.text.y = element_text(size = 16),
+      axis.title = element_text(size = 20),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      legend.position = "right",
+      legend.title = element_text(face = "bold", size = 20),
+      legend.text = ggtext::element_markdown(size = 20),
+      plot.margin = margin(
+        t = 10,
+        r = 10,
+        b = 0,
+        l = 130
+      )
+    )
+  
+  safe_name <- str_replace_all(ec_id, "[^A-Za-z0-9_\\-]", "_")
+  
+  ggsave(
+    filename = file.path(
+      out_base,
+      paste0(safe_name, "_top5_species_EC_contribution_timepoint2.png")
+    ),
+    plot = p,
+    width = 12,
+    height = 9,
+    dpi = 300
+  )
+  
+  p
+}
+
+plots_ec_species <- map(target_ecs, make_ec_species_plot)
+names(plots_ec_species) <- target_ecs
+
+plots_ec_species[["3.1.1.11"]]
+plots_ec_species[["3.1.1.73"]]
+
+
+```
+
+Barplot FAE and PME abundance
+```{r}
+
+
+# ------------------------------------------------------------------------------
+# 1. Load data
+# ------------------------------------------------------------------------------
+
+gene_list <- read.csv(
+  "C:/Users/lasse/Desktop/wd/25/df/26/pectin_deg_genes_reduced.tsv",
+  header = TRUE, sep = "\t"
+)
+
+ec_custom_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_custom_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/custom/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_meso <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode04/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+ec_standard_thermo <- read.csv("C:/Users/lasse/Desktop/wd/picrust2/df/my_samples/standard/barcode16/ec/pred_metagenome_contrib.tsv.gz", header = TRUE, sep = "\t") %>%
+  filter(function. %in% gene_list$EC)
+
+# ------------------------------------------------------------------------------
+# 2. Settings
+# ------------------------------------------------------------------------------
+
+dir.create("plots/ec", recursive = TRUE, showWarnings = FALSE)
+
+# ------------------------------------------------------------------------------
+# 3. EC metadata
+# ------------------------------------------------------------------------------
+
+gene_meta <- gene_list %>%
+  distinct(EC, enzyme, class, CAZY, KO, substrate, product) %>%
+  rename(function. = EC)
+
+# ------------------------------------------------------------------------------
+# 4. Combine stratified EC contribution dfs
+# ------------------------------------------------------------------------------
+
+ec_list <- list(
+  custom_meso     = ec_custom_meso,
+  custom_thermo   = ec_custom_thermo,
+  standard_meso   = ec_standard_meso,
+  standard_thermo = ec_standard_thermo
+)
+
+ec_all_strat <- bind_rows(ec_list, .id = "df_id") %>%
+  separate(
+    df_id,
+    into = c("database", "temperature"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
+  mutate(
+    database = recode(
+      database,
+      custom = "MiDAS DB",
+      standard = "PICRUSt2-SC"
+    ),
+    temperature = recode(
+      temperature,
+      meso = "Mesophilic",
+      thermo = "Thermophilic"
+    ),
+    database = factor(
+      database,
+      levels = c("PICRUSt2-SC", "MiDAS DB")
+    ),
+    temperature = factor(
+      temperature,
+      levels = c("Mesophilic", "Thermophilic")
+    ),
+    plot_group = paste(temperature, database, sep = " | "),
+    plot_group = factor(
+      plot_group,
+      levels = c(
+        "Mesophilic | PICRUSt2-SC",
+        "Mesophilic | MiDAS DB",
+        "Thermophilic | PICRUSt2-SC",
+        "Thermophilic | MiDAS DB"
+      )
+    )
+  ) %>%
+  left_join(gene_meta, by = "function.")
+
+# ------------------------------------------------------------------------------
+# 5. Reconstruct unstratified EC abundance from stratified data
+# ------------------------------------------------------------------------------
+
+ec_unstrat_reconstructed <- ec_all_strat %>%
+  group_by(
+    plot_group,
+    database,
+    temperature,
+    function.,
+    enzyme,
+    class,
+    substrate,
+    product
+  ) %>%
+  summarise(
+    abundance = sum(taxon_function_abun, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    ec_label = paste0(function., " — ", enzyme),
+    ec_label = str_squish(ec_label)
+  ) %>%
+  arrange(temperature, database, ec_label)
+
+# ------------------------------------------------------------------------------
+# 6. Barplot
+# ------------------------------------------------------------------------------
+
+p_ec_barplot <- ggplot(
+  ec_unstrat_reconstructed,
+  aes(
+    x = plot_group,
+    y = abundance,
+    fill = ec_label
+  )
+) +
+  geom_col(
+    width = 0.8,
+    colour = "black",
+    position = position_dodge2(
+      width = 0.8,
+      padding = 0,
+      preserve = "single"
+    )
+  ) +
+  labs(
+    x = NULL,
+    y = "Predicted EC abundance (pseudo-log scale)",
+    fill = "EC / enzyme"
+  ) +
+  scale_y_continuous(
+    trans = scales::pseudo_log_trans(base = 10),
+    breaks = c(0, 10, 10000, 25000, 100000),
+    labels = scales::comma
+  ) +
+  theme_bw(base_size = 18) +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1, size = 20),
+    axis.text.y = element_text(size = 16),
+    axis.title = element_text(size = 20),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 20),
+    legend.text = element_text(size = 18),
+    plot.margin = margin(
+      t = 10,
+      r = 10,
+      b = 0,
+      l = 80
+    )
+  )
+
+p_ec_barplot
+
+# ------------------------------------------------------------------------------
+# 7. Save EC abundance barplot
+# ------------------------------------------------------------------------------
+
+ggsave(
+  filename = "plots_one/ec_custom_standard.png",
+  plot = p_ec_barplot,
+  width = 13,
+  height = 11,
+  dpi = 300
+)
+
+```
+
+
